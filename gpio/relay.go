@@ -9,9 +9,7 @@ import (
 const (
 	NO       int = 0
 	NC       int = 1
-	ON       int = 1
-	OFF      int = 0
-	SateOn       = "on"
+	StateOn      = "on"
 	StateOff     = "off"
 )
 
@@ -25,13 +23,13 @@ type RelayImp struct {
 
 func NewRelay(c client.Client, pin int, level int, output int, defaultState string) (relay Relay, err error) {
 
-	if level != client.HIGH && level != client.LOW {
-		errors.New("Level must be HIGH or LOW")
+	if level != High && level != Low {
+		errors.New("Level must be High or Low")
 	}
 	if output != NO && output != NC {
 		errors.New("Output must be NO or NC")
 	}
-	if defaultState != SateOn && defaultState != StateOff {
+	if defaultState != StateOn && defaultState != StateOff {
 		errors.New("DefaultState must be StateOn or StateOff")
 	}
 
@@ -56,7 +54,7 @@ func NewRelay(c client.Client, pin int, level int, output int, defaultState stri
 
 	// Set default state
 	switch defaultState {
-	case SateOn:
+	case StateOn:
 		err = relay.On()
 	case StateOff:
 		err = relay.Off()
@@ -72,27 +70,27 @@ func (r *RelayImp) On() (err error) {
 	case NO:
 		// Normaly Open
 		switch r.Level {
-		case client.HIGH:
+		case High:
 			// High signal
 			err = r.GPIO.Client.DigitalWrite(r.GPIO.Pin, client.HIGH)
-		case client.LOW:
+		case Low:
 			// Low signal
 			err = r.GPIO.Client.DigitalWrite(r.GPIO.Pin, client.LOW)
 		}
 	case NC:
 		// Normaly Close
 		switch r.Level {
-		case client.HIGH:
+		case High:
 			// High signal
 			err = r.GPIO.Client.DigitalWrite(r.GPIO.Pin, client.LOW)
-		case client.LOW:
+		case Low:
 			// Low signal
 			err = r.GPIO.Client.DigitalWrite(r.GPIO.Pin, client.HIGH)
 		}
 	}
 
 	if err == nil {
-		r.state = SateOn
+		r.state = StateOn
 	}
 
 	return err
@@ -103,20 +101,20 @@ func (r *RelayImp) Off() (err error) {
 	case NO:
 		// Normaly Open
 		switch r.Level {
-		case client.HIGH:
+		case High:
 			// High signal
 			err = r.GPIO.Client.DigitalWrite(r.GPIO.Pin, client.LOW)
-		case client.LOW:
+		case Low:
 			// Low signal
 			err = r.GPIO.Client.DigitalWrite(r.GPIO.Pin, client.HIGH)
 		}
 	case NC:
 		// Normaly Close
 		switch r.Level {
-		case client.HIGH:
+		case High:
 			// High signal
 			err = r.GPIO.Client.DigitalWrite(r.GPIO.Pin, client.HIGH)
-		case client.LOW:
+		case Low:
 			// Low signal
 			err = r.GPIO.Client.DigitalWrite(r.GPIO.Pin, client.LOW)
 		}

@@ -14,15 +14,6 @@ func CheckMode(mode string) (err error) {
 	return err
 }
 
-// CheckLevel permit to check that level provided exist
-func CheckLevel(level int) (err error) {
-	if level != HIGH && level != LOW {
-		err = errors.New("Level must be HIGH or LOW")
-	}
-
-	return err
-}
-
 // Unmarshal Parse JSON string to string map
 func Unmarshal(msg []byte) (data map[string]interface{}, err error) {
 

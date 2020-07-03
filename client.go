@@ -9,7 +9,7 @@ import (
 )
 
 type Client struct {
-	resty *resty.Client
+	Resty *resty.Client
 }
 
 func NewClient(url string) Board {
@@ -18,7 +18,7 @@ func NewClient(url string) Board {
 		SetHeader("Content-Type", "application/json")
 
 	return &Client{
-		resty: resty,
+		Resty: resty,
 	}
 }
 
@@ -32,7 +32,7 @@ func (c *Client) SetPinMode(pin int, mode string) (err error) {
 
 	url := fmt.Sprintf("/mode/%d/%s", pin, mode)
 
-	resp, err := c.resty.R().
+	resp, err := c.Resty.R().
 		SetHeader("Accept", "application/json").
 		Get(url)
 
@@ -40,53 +40,13 @@ func (c *Client) SetPinMode(pin int, mode string) (err error) {
 
 	return err
 
-}
-
-// DigitalWrite permit to set level on digital pin
-func (c *Client) DigitalWrite(pin int, level int) (err error) {
-
-	err = CheckLevel(level)
-	if err != nil {
-		return err
-	}
-
-	url := fmt.Sprintf("/digital/%d/%d", pin, level)
-
-	resp, err := c.resty.R().
-		SetHeader("Accept", "application/json").
-		Get(url)
-
-	log.Debugf("Resp: %s", resp.String())
-
-	return err
-}
-
-// DigitalRead permit to read level on digital pin
-func (c *Client) DigitalRead(pin int) (level int, err error) {
-
-	url := fmt.Sprintf("/digital/%d", pin)
-
-	resp, err := c.resty.R().
-		SetHeader("Accept", "application/json").
-		Get(url)
-
-	log.Debugf("Resp: %s", resp.String())
-
-	data, err := Unmarshal(resp.Body())
-	if err != nil {
-		return level, err
-	}
-
-	level = data["return_value"].(int)
-
-	return level, err
 }
 
 // ReadValue permit to read exposed variable
 func (c *Client) ReadValue(name string) (value interface{}, err error) {
 	url := fmt.Sprintf("/%s", name)
 
-	resp, err := c.resty.R().
+	resp, err := c.Resty.R().
 		SetHeader("Accept", "application/json").
 		Get(url)
 
@@ -110,7 +70,7 @@ func (c *Client) CallFunction(name string, command string) (value int, err error
 
 	url := fmt.Sprintf("/%s", name)
 
-	resp, err := c.resty.R().
+	resp, err := c.Resty.R().
 		SetQueryParams(map[string]string{
 			"params": command,
 		}).
