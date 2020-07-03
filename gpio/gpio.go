@@ -1,6 +1,6 @@
 package gpio
 
-import "github.com/disaster37/go-client-arest"
+import client "github.com/disaster37/go-arest"
 
 type GPIO struct {
 	Client client.Client
