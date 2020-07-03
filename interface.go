@@ -1,6 +1,6 @@
 package client
 
-type client interface {
+type Board interface {
 	SetPinMode(pin int, mode string) (err error)
 	DigitalWrite(pin int, level int) (err error)
 	DigitalRead(pin int) (level int, err error)

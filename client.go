@@ -12,7 +12,7 @@ type Client struct {
 	resty *resty.Client
 }
 
-func NewClient(url string) client {
+func NewClient(url string) Board {
 	resty := resty.New().
 		SetHostURL(url).
 		SetHeader("Content-Type", "application/json")

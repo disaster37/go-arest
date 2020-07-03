@@ -1,6 +1,6 @@
 package gpio
 
-type relay interface {
+type Relay interface {
 	On() (err error)
 	Off() (err error)
 	State() (state string)

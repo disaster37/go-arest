@@ -15,7 +15,7 @@ const (
 	StateOff     = "off"
 )
 
-type Relay struct {
+type RelayImp struct {
 	GPIO         *GPIO
 	Level        int
 	Output       int
@@ -23,7 +23,7 @@ type Relay struct {
 	state        string
 }
 
-func NewRelay(c client.Client, pin int, level int, output int, defaultState string) (relay relay, err error) {
+func NewRelay(c client.Client, pin int, level int, output int, defaultState string) (relay Relay, err error) {
 
 	if level != client.HIGH && level != client.LOW {
 		errors.New("Level must be HIGH or LOW")
@@ -41,7 +41,7 @@ func NewRelay(c client.Client, pin int, level int, output int, defaultState stri
 		Mode:   client.OUTPUT,
 	}
 
-	relay = &Relay{
+	relay = &RelayImp{
 		GPIO:         gpio,
 		Level:        level,
 		Output:       output,
@@ -66,7 +66,7 @@ func NewRelay(c client.Client, pin int, level int, output int, defaultState stri
 
 }
 
-func (r *Relay) On() (err error) {
+func (r *RelayImp) On() (err error) {
 
 	switch r.Output {
 	case NO:
@@ -98,7 +98,7 @@ func (r *Relay) On() (err error) {
 	return err
 }
 
-func (r *Relay) Off() (err error) {
+func (r *RelayImp) Off() (err error) {
 	switch r.Output {
 	case NO:
 		// Normaly Open
@@ -129,6 +129,6 @@ func (r *Relay) Off() (err error) {
 	return err
 }
 
-func (r *Relay) State() string {
+func (r *RelayImp) State() string {
 	return r.State()
 }
