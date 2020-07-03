@@ -3,7 +3,7 @@ package gpio
 import (
 	"errors"
 
-	client "github.com/disaster37/go-arest"
+	client "github.com/disaster37/go-arest/v1"
 )
 
 const (
