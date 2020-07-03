@@ -1,4 +1,4 @@
-module github.com/disaster37/go-arest/v1
+module github.com/disaster37/go-arest
 
 go 1.13
 
