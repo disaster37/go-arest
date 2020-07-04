@@ -2,6 +2,7 @@ package arest
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/go-resty/resty/v2"
 	"github.com/pkg/errors"
@@ -39,7 +40,8 @@ type Client struct {
 func NewClient(url string) Arest {
 	resty := resty.New().
 		SetHostURL(url).
-		SetHeader("Content-Type", "application/json")
+		SetHeader("Content-Type", "application/json").
+		SetTimeout(10 * time.Second)
 
 	return &Client{
 		resty: resty,
