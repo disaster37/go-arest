@@ -117,7 +117,7 @@ func (c *Client) ReadValue(name string) (value interface{}, err error) {
 	log.Debugf("Value name: %s", name)
 
 	url := fmt.Sprintf("/%s", name)
-	var data map[string]interface{}
+	data := make(map[string]interface{})
 
 	resp, err := c.resty.R().
 		SetHeader("Accept", "application/json").
@@ -142,7 +142,7 @@ func (c *Client) CallFunction(name string, param string) (value int, err error) 
 
 	url := fmt.Sprintf("/%s", name)
 
-	var data map[string]interface{}
+	data := make(map[string]interface{})
 
 	resp, err := c.resty.R().
 		SetQueryParams(map[string]string{
