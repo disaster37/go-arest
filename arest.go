@@ -155,7 +155,7 @@ func (c *Client) CallFunction(name string, param string) (value int, err error) 
 	log.Debugf("Resp: %s", resp.String())
 
 	if temp, ok := data["return_value"]; ok {
-		value = temp.(int)
+		value = int(temp.(float64))
 	} else {
 		errors.Errorf("Function %s not found", name)
 	}
