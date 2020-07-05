@@ -92,23 +92,21 @@ func (c *Client) DigitalRead(pin int) (level Level, err error) {
 	log.Debugf("Pin: %d", pin)
 
 	url := fmt.Sprintf("/digital/%d", pin)
+	data := make(map[string]interface{})
 
 	resp, err := c.resty.R().
 		SetHeader("Accept", "application/json").
-		//	SetResult(map[string]interface{}{}).
+		SetResult(&data).
 		Get(url)
 
 	log.Debugf("Resp: %s", resp.String())
-	/*
-		data := (*resp.Result().(*map[string]interface{}))
 
-		level = NewLevel()
-		if data["return_value"].(int) == high {
-			level.SetLevelHigh()
-		} else {
-			level.SetLevelLow()
-		}
-	*/
+	level = NewLevel()
+	if data["return_value"].(int) == high {
+		level.SetLevelHigh()
+	} else {
+		level.SetLevelLow()
+	}
 
 	return level, err
 }
