@@ -102,7 +102,7 @@ func (c *Client) DigitalRead(pin int) (level Level, err error) {
 	log.Debugf("Resp: %s", resp.String())
 
 	level = NewLevel()
-	if data["return_value"].(int) == high {
+	if int(data["return_value"].(float64)) == high {
 		level.SetLevelHigh()
 	} else {
 		level.SetLevelLow()
