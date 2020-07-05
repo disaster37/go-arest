@@ -18,6 +18,9 @@ type Relay interface {
 
 	// OutputState return the current output state
 	OutputState() (state State)
+
+	// Reset permit to reconfigure relay. It usefull when board reboot
+	Reset() (err error)
 }
 
 // RelayImp implement the relay interface
@@ -39,24 +42,10 @@ func NewRelay(c arest.Arest, pin int, signal arest.Level, output Output, default
 		signal:      signal,
 		output:      output,
 		state:       NewState(),
-		outputState: NewState(),
+		outputState: defaultState,
 	}
 
-	mode := arest.NewMode()
-	mode.SetModeOutput()
-
-	// Set pin mode
-	err = c.SetPinMode(pin, mode)
-	if err != nil {
-		return nil, err
-	}
-
-	// Set default state
-	if defaultState.IsOn() {
-		err = relay.On()
-	} else {
-		err = relay.Off()
-	}
+	err = relay.Reset()
 
 	return relay, err
 
@@ -147,4 +136,27 @@ func (r *RelayImp) State() State {
 // OutputState return the current output state
 func (r *RelayImp) OutputState() State {
 	return r.outputState
+}
+
+// Reset permit to reconfigure relay. It usefull when board reboot
+// It apply the desired state
+func (r *RelayImp) Reset() (err error) {
+	mode := arest.NewMode()
+	mode.SetModeOutput()
+
+	// Set pin mode
+	err = r.client.SetPinMode(r.pin, mode)
+	if err != nil {
+		return err
+	}
+
+	// Set relay on right state
+	if r.outputState.IsOn() {
+		err = r.On()
+	} else {
+		err = r.Off()
+	}
+
+	return err
+
 }

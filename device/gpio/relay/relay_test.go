@@ -16,12 +16,11 @@ func TestRelay(t *testing.T) {
 	httpmock.RegisterResponder("POST", "http://localhost/digital/0/1", responder)
 	httpmock.RegisterResponder("POST", "http://localhost/digital/0/0", responder)
 
+	// when NO and High signale
 	signal := arest.NewLevel()
 	output := NewOutput()
 	defaultState := NewState()
 	defaultState.SetStateOn()
-
-	// when NO and High signale
 	signal.SetLevelHigh()
 	output.SetOutputNO()
 	relay, err := NewRelay(client, 0, signal, output, defaultState)
@@ -38,6 +37,10 @@ func TestRelay(t *testing.T) {
 	assert.Equal(t, true, relay.OutputState().IsOff())
 
 	//when NO and Low signal
+	signal = arest.NewLevel()
+	output = NewOutput()
+	defaultState = NewState()
+	defaultState.SetStateOn()
 	signal.SetLevelLow()
 	output.SetOutputNO()
 	relay, err = NewRelay(client, 0, signal, output, defaultState)
@@ -54,6 +57,10 @@ func TestRelay(t *testing.T) {
 	assert.Equal(t, true, relay.OutputState().IsOff())
 
 	// when NC and High signal
+	signal = arest.NewLevel()
+	output = NewOutput()
+	defaultState = NewState()
+	defaultState.SetStateOn()
 	signal.SetLevelHigh()
 	output.SetOutputNC()
 	relay, err = NewRelay(client, 0, signal, output, defaultState)
@@ -70,6 +77,10 @@ func TestRelay(t *testing.T) {
 	assert.Equal(t, true, relay.OutputState().IsOff())
 
 	//when NC and Low signal
+	signal = arest.NewLevel()
+	output = NewOutput()
+	defaultState = NewState()
+	defaultState.SetStateOn()
 	signal.SetLevelLow()
 	output.SetOutputNC()
 	relay, err = NewRelay(client, 0, signal, output, defaultState)
