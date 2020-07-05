@@ -92,7 +92,7 @@ func (c *Client) DigitalRead(pin int) (level Level, err error) {
 	log.Debugf("Pin: %d", pin)
 
 	url := fmt.Sprintf("/digital/%d", pin)
-	var data map[string]interface{}
+	data := make(map[string]interface{})
 
 	resp, err := c.resty.R().
 		SetHeader("Accept", "application/json").
