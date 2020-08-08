@@ -1,4 +1,4 @@
-package rest
+package serial
 
 import (
 	"encoding/json"
