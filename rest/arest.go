@@ -77,6 +77,9 @@ func (c *Client) DigitalRead(pin int) (level arest.Level, err error) {
 		SetHeader("Accept", "application/json").
 		SetResult(&data).
 		Get(url)
+	if err != nil {
+		return nil, err
+	}
 
 	log.Debugf("Resp: %s", resp.String())
 
@@ -102,6 +105,9 @@ func (c *Client) ReadValue(name string) (value interface{}, err error) {
 		SetHeader("Accept", "application/json").
 		SetResult(&data).
 		Get(url)
+	if err != nil {
+		return nil, err
+	}
 
 	log.Debugf("Resp: %s", resp.String())
 
@@ -112,6 +118,30 @@ func (c *Client) ReadValue(name string) (value interface{}, err error) {
 	}
 
 	return value, err
+}
+
+// ReadValues permit to read user variable
+func (c *Client) ReadValues() (values map[string]interface{}, err error) {
+
+	data := make(map[string]interface{})
+
+	resp, err := c.resty.R().
+		SetHeader("Accept", "application/json").
+		SetResult(&data).
+		Get("/")
+	if err != nil {
+		return nil, err
+	}
+
+	log.Debugf("Resp: %s", resp.String())
+
+	if temp, ok := data["variables"]; ok {
+		values = temp.(map[string]interface{})
+	} else {
+		err = errors.Errorf("No variable found")
+	}
+
+	return values, err
 }
 
 // CallFunction permit to call user function
@@ -130,6 +160,9 @@ func (c *Client) CallFunction(name string, param string) (value int, err error) 
 		SetHeader("Accept", "application/json").
 		SetResult(&data).
 		Post(url)
+	if err != nil {
+		return value, err
+	}
 
 	log.Debugf("Resp: %s", resp.String())
 

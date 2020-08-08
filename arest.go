@@ -15,6 +15,9 @@ type Arest interface {
 	// ReadValue permit to read user variable
 	ReadValue(name string) (value interface{}, err error)
 
+	// ReadValues permit to read all user variables
+	ReadValues() (values map[string]interface{}, err error)
+
 	// CallFunction permit to call user function
 	CallFunction(name string, param string) (resp int, err error)
 }

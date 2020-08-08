@@ -154,6 +154,39 @@ func (c *Client) ReadValue(name string) (value interface{}, err error) {
 	return value, err
 }
 
+// ReadValues permit to read user variable
+func (c *Client) ReadValues() (values map[string]interface{}, err error) {
+
+	url := "/\n\r"
+	data := make(map[string]interface{})
+	buffer := make([]byte, 0, 0)
+
+	resp, err := c.serialPort.Write([]byte(url))
+	if err != nil {
+		return nil, err
+	}
+	log.Debugf("Sent: %v bytes", resp)
+
+	resp, err = c.serialPort.Read(buffer)
+	if err != nil {
+		return nil, err
+	}
+	log.Debugf("Receive: %v bytes", resp)
+
+	err = json.Unmarshal(buffer, &data)
+	if err != nil {
+		return nil, err
+	}
+
+	if temp, ok := data["variables"]; ok {
+		values = temp.(map[string]interface{})
+	} else {
+		err = errors.Errorf("No variable found")
+	}
+
+	return values, err
+}
+
 // CallFunction permit to call user function
 func (c *Client) CallFunction(name string, param string) (value int, err error) {
 

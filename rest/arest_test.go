@@ -93,6 +93,19 @@ func (s *ArestTestSuite) testReadValue() {
 	assert.Error(s.T(), err)
 }
 
+func (s *ArestTestSuite) testReadValues() {
+
+	fixture := `{"variables": {"isRebooted": false}, "id": "002", "name": "TFP", "hardware": "arduino", "connected": true}`
+	responder := httpmock.NewStringResponder(200, fixture)
+	fakeURL := "http://localhost/"
+	httpmock.RegisterResponder("GET", fakeURL, responder)
+
+	values, err := s.client.ReadValues()
+	assert.NoError(s.T(), err)
+	assert.Equal(s.T(), true, values["isRebooted"].(bool))
+
+}
+
 func (s *ArestTestSuite) testCallFunction() {
 
 	fixture := `{"return_value": 1, "id": "002", "name": "TFP", "hardware": "arduino", "connected": true}`
