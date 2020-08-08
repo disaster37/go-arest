@@ -4,12 +4,13 @@ import (
 	"testing"
 
 	"github.com/disaster37/go-arest"
+	"github.com/disaster37/go-arest/rest"
 	"github.com/jarcoal/httpmock"
 	"github.com/stretchr/testify/assert"
 )
 
-func TestRelay(t *testing.T) {
-	client := arest.MockClient()
+func TestRelayRest(t *testing.T) {
+	client := rest.MockRestClient()
 	fixture := `{}`
 	responder := httpmock.NewStringResponder(200, fixture)
 	httpmock.RegisterResponder("POST", "http://localhost/mode/0/o", responder)
