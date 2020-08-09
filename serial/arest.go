@@ -128,7 +128,7 @@ func (c *Client) ReadValue(name string) (value interface{}, err error) {
 
 	url := fmt.Sprintf("/%s\n\r", name)
 	data := make(map[string]interface{})
-	buffer := make([]byte, 0, 0)
+	buffer := make([]byte, 2048)
 
 	resp, err := c.serialPort.Write([]byte(url))
 	if err != nil {
@@ -136,11 +136,17 @@ func (c *Client) ReadValue(name string) (value interface{}, err error) {
 	}
 	log.Debugf("Sent: %v bytes", resp)
 
-	resp, err = c.serialPort.Read(buffer)
-	if err != nil {
-		return nil, err
+	for {
+		resp, err = c.serialPort.Read(buffer)
+		if err != nil {
+			return nil, err
+		}
+		if resp == 0 {
+			break
+		}
+		log.Debugf("Receive: %v bytes", resp)
+		log.Debugf("%s", string(buffer))
 	}
-	log.Debugf("Receive: %v bytes", resp)
 
 	err = json.Unmarshal(buffer, &data)
 	if err != nil {
