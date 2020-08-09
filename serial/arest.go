@@ -150,7 +150,7 @@ func (c *Client) ReadValue(name string) (value interface{}, err error) {
 		resp.Write(buffer[:n])
 	}
 
-	err = json.Unmarshal(resp, &data)
+	err = json.Unmarshal([]byte(resp.String()), &data)
 	if err != nil {
 		return nil, err
 	}
