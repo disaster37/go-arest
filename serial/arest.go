@@ -19,6 +19,8 @@ type Client struct {
 func NewClient(url string) (arest.Arest, error) {
 	mode := &serial.Mode{
 		BaudRate: 115200,
+		DataBits: 8,
+		StopBits: serial.OneStopBit,
 	}
 	serialPort, err := serial.Open(url, mode)
 	if err != nil {
