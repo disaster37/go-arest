@@ -233,11 +233,15 @@ func (c *Client) read() (string, error) {
 		if err != nil {
 			return "", err
 		}
-		if n == 0 || string(buffer[n-1]) == "\r" {
+		if n == 0 {
 			break
 		}
 		resp.Write(buffer[:n])
 		log.Debug(string(buffer[:n]))
+
+		if strings.Contains(string(buff[:n]), "\n") {
+			break
+		}
 	}
 
 	log.Debugf("Resp: %s", resp.String())
