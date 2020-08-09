@@ -239,7 +239,7 @@ func (c *Client) read() (string, error) {
 		}
 		log.Debugf("Receive: %v bytes", n)
 		resp.Write(buffer[:n])
-		log.Debug(buffer[:n])
+		log.Debug(string(buffer[:n]))
 	}
 
 	log.Debugf("Resp: %s", resp.String())
