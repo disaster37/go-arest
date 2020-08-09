@@ -14,7 +14,7 @@ import (
 // Client implement arest interface
 type Client struct {
 	serialPort serial.Port
-	sem chan
+	sem        chan int
 }
 
 // NewClient permit to initialize new client Object
@@ -44,7 +44,7 @@ func NewClient(url string) (arest.Arest, error) {
 
 	return &Client{
 		serialPort: serialPort,
-		sem: make(chan int, 1)
+		sem:        make(chan int, 1),
 	}, nil
 }
 
@@ -55,10 +55,10 @@ func (c *Client) Client() serial.Port {
 
 // SetPinMode permit to set pin mode
 func (c *Client) SetPinMode(pin int, mode arest.Mode) (err error) {
-	c.sem <- 1
-	defer <-c.sem
+	c.takeSemaphore()
+	defer c.releazeSemaphore()
 	log.Debugf("Pin: %d, Mode: %s", pin, mode.String())
-	
+
 	url := fmt.Sprintf("/mode/%d/%s\n\r", pin, mode.Mode())
 
 	n, err := c.serialPort.Write([]byte(url))
@@ -74,8 +74,8 @@ func (c *Client) SetPinMode(pin int, mode arest.Mode) (err error) {
 
 // DigitalWrite permit to set level on pin
 func (c *Client) DigitalWrite(pin int, level arest.Level) (err error) {
-	c.sem <- 1
-	defer <-c.sem
+	c.takeSemaphore()
+	defer c.releazeSemaphore()
 	log.Debugf("Pin: %d, Level: %s", pin, level.String())
 
 	url := fmt.Sprintf("/digital/%d/%d\n\r", pin, level.Level())
@@ -85,15 +85,15 @@ func (c *Client) DigitalWrite(pin int, level arest.Level) (err error) {
 		return err
 	}
 
-	log.Debugf("Sent: %v bytes", resp)
+	log.Debugf("Sent: %v bytes", n)
 
 	return err
 }
 
 // DigitalRead permit to read level from pin
 func (c *Client) DigitalRead(pin int) (level arest.Level, err error) {
-	c.sem <- 1
-	defer <-c.sem
+	c.takeSemaphore()
+	defer c.releazeSemaphore()
 	log.Debugf("Pin: %d", pin)
 
 	url := fmt.Sprintf("/digital/%d\n\r", pin)
@@ -103,9 +103,9 @@ func (c *Client) DigitalRead(pin int) (level arest.Level, err error) {
 	if err != nil {
 		return nil, err
 	}
-	log.Debugf("Sent: %v bytes", resp)
+	log.Debugf("Sent: %v bytes", n)
 
-	resp, err = c.read()
+	resp, err := c.read()
 	if err != nil {
 		return nil, err
 	}
@@ -127,8 +127,8 @@ func (c *Client) DigitalRead(pin int) (level arest.Level, err error) {
 
 // ReadValue permit to read user variable
 func (c *Client) ReadValue(name string) (value interface{}, err error) {
-	c.sem <- 1
-	defer <-c.sem
+	c.takeSemaphore()
+	defer c.releazeSemaphore()
 	log.Debugf("Value name: %s", name)
 
 	url := fmt.Sprintf("/%s\n\r", name)
@@ -161,8 +161,8 @@ func (c *Client) ReadValue(name string) (value interface{}, err error) {
 
 // ReadValues permit to read user variable
 func (c *Client) ReadValues() (values map[string]interface{}, err error) {
-	c.sem <- 1
-	defer <-c.sem
+	c.takeSemaphore()
+	defer c.releazeSemaphore()
 	url := "/\n\r"
 	data := make(map[string]interface{})
 
@@ -172,7 +172,7 @@ func (c *Client) ReadValues() (values map[string]interface{}, err error) {
 	}
 	log.Debugf("Sent: %v bytes", n)
 
-	resp, err = c.read()
+	resp, err := c.read()
 	if err != nil {
 		return nil, err
 	}
@@ -193,8 +193,8 @@ func (c *Client) ReadValues() (values map[string]interface{}, err error) {
 
 // CallFunction permit to call user function
 func (c *Client) CallFunction(name string, param string) (value int, err error) {
-	c.sem <- 1
-	defer <-c.sem
+	c.takeSemaphore()
+	defer c.releazeSemaphore()
 	log.Debugf("Function: %s, param: %s", name, param)
 
 	url := fmt.Sprintf("/%s?params=%s\n\r", name, param)
@@ -204,9 +204,9 @@ func (c *Client) CallFunction(name string, param string) (value int, err error) 
 	if err != nil {
 		return value, err
 	}
-	log.Debugf("Sent: %v bytes", resp)
+	log.Debugf("Sent: %v bytes", n)
 
-	resp, err = c.read()
+	resp, err := c.read()
 	if err != nil {
 		return value, err
 	}
@@ -225,13 +225,12 @@ func (c *Client) CallFunction(name string, param string) (value int, err error) 
 	return value, err
 }
 
-
-func (c *Client) read() (string, err) {
+func (c *Client) read() (string, error) {
 	buffer := make([]byte, 2048)
 	var resp strings.Builder
 
 	for {
-		n, err = c.serialPort.Read(buffer)
+		n, err := c.serialPort.Read(buffer)
 		if err != nil {
 			return "", err
 		}
@@ -245,4 +244,12 @@ func (c *Client) read() (string, err) {
 	log.Debugf("Resp: %s", resp.String())
 
 	return resp.String(), nil
+}
+
+func (c *Client) takeSemaphore() {
+	c.sem <- 1
+}
+
+func (c *Client) releazeSemaphore() {
+	<-c.sem
 }
