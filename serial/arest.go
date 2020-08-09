@@ -231,13 +231,13 @@ func (c *Client) read() (string, error) {
 
 	for {
 		n, err := c.serialPort.Read(buffer)
+		log.Debugf("Receive: %v bytes", n)
 		if err != nil {
 			return "", err
 		}
 		if n == 0 {
 			break
 		}
-		log.Debugf("Receive: %v bytes", n)
 		resp.Write(buffer[:n])
 		log.Debug(string(buffer[:n]))
 	}
