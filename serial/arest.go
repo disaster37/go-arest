@@ -14,6 +14,7 @@ import (
 // Client implement arest interface
 type Client struct {
 	serialPort serial.Port
+	sem chan
 }
 
 // NewClient permit to initialize new client Object
@@ -43,6 +44,7 @@ func NewClient(url string) (arest.Arest, error) {
 
 	return &Client{
 		serialPort: serialPort,
+		sem: make(chan int, 1)
 	}, nil
 }
 
@@ -53,17 +55,18 @@ func (c *Client) Client() serial.Port {
 
 // SetPinMode permit to set pin mode
 func (c *Client) SetPinMode(pin int, mode arest.Mode) (err error) {
-
+	c.sem <- 1
+	defer <-c.sem
 	log.Debugf("Pin: %d, Mode: %s", pin, mode.String())
-
+	
 	url := fmt.Sprintf("/mode/%d/%s\n\r", pin, mode.Mode())
 
-	resp, err := c.serialPort.Write([]byte(url))
+	n, err := c.serialPort.Write([]byte(url))
 	if err != nil {
 		return err
 	}
 
-	log.Debugf("Sent: %v bytes", resp)
+	log.Debugf("Sent: %v bytes", n)
 
 	return nil
 
@@ -71,12 +74,13 @@ func (c *Client) SetPinMode(pin int, mode arest.Mode) (err error) {
 
 // DigitalWrite permit to set level on pin
 func (c *Client) DigitalWrite(pin int, level arest.Level) (err error) {
-
+	c.sem <- 1
+	defer <-c.sem
 	log.Debugf("Pin: %d, Level: %s", pin, level.String())
 
 	url := fmt.Sprintf("/digital/%d/%d\n\r", pin, level.Level())
 
-	resp, err := c.serialPort.Write([]byte(url))
+	n, err := c.serialPort.Write([]byte(url))
 	if err != nil {
 		return err
 	}
@@ -88,26 +92,25 @@ func (c *Client) DigitalWrite(pin int, level arest.Level) (err error) {
 
 // DigitalRead permit to read level from pin
 func (c *Client) DigitalRead(pin int) (level arest.Level, err error) {
-
+	c.sem <- 1
+	defer <-c.sem
 	log.Debugf("Pin: %d", pin)
 
 	url := fmt.Sprintf("/digital/%d\n\r", pin)
 	data := make(map[string]interface{})
 
-	resp, err := c.serialPort.Write([]byte(url))
+	n, err := c.serialPort.Write([]byte(url))
 	if err != nil {
 		return nil, err
 	}
 	log.Debugf("Sent: %v bytes", resp)
 
-	buffer := make([]byte, 0, 0)
-	resp, err = c.serialPort.Read(buffer)
+	resp, err = c.read()
 	if err != nil {
 		return nil, err
 	}
-	log.Debugf("Receive: %v bytes", resp)
 
-	err = json.Unmarshal(buffer, &data)
+	err = json.Unmarshal([]byte(resp), &data)
 	if err != nil {
 		return nil, err
 	}
@@ -124,13 +127,12 @@ func (c *Client) DigitalRead(pin int) (level arest.Level, err error) {
 
 // ReadValue permit to read user variable
 func (c *Client) ReadValue(name string) (value interface{}, err error) {
-
+	c.sem <- 1
+	defer <-c.sem
 	log.Debugf("Value name: %s", name)
 
 	url := fmt.Sprintf("/%s\n\r", name)
 	data := make(map[string]interface{})
-	buffer := make([]byte, 2048)
-	var resp strings.Builder
 
 	n, err := c.serialPort.Write([]byte(url))
 	if err != nil {
@@ -138,19 +140,12 @@ func (c *Client) ReadValue(name string) (value interface{}, err error) {
 	}
 	log.Debugf("Sent: %v bytes", n)
 
-	for {
-		n, err = c.serialPort.Read(buffer)
-		if err != nil {
-			return nil, err
-		}
-		if n == 0 {
-			break
-		}
-		log.Debugf("Receive: %v bytes", n)
-		resp.Write(buffer[:n])
+	resp, err := c.read()
+	if err != nil {
+		return nil, err
 	}
 
-	err = json.Unmarshal([]byte(resp.String()), &data)
+	err = json.Unmarshal([]byte(resp), &data)
 	if err != nil {
 		return nil, err
 	}
@@ -166,24 +161,23 @@ func (c *Client) ReadValue(name string) (value interface{}, err error) {
 
 // ReadValues permit to read user variable
 func (c *Client) ReadValues() (values map[string]interface{}, err error) {
-
+	c.sem <- 1
+	defer <-c.sem
 	url := "/\n\r"
 	data := make(map[string]interface{})
-	buffer := make([]byte, 0, 0)
 
-	resp, err := c.serialPort.Write([]byte(url))
+	n, err := c.serialPort.Write([]byte(url))
 	if err != nil {
 		return nil, err
 	}
-	log.Debugf("Sent: %v bytes", resp)
+	log.Debugf("Sent: %v bytes", n)
 
-	resp, err = c.serialPort.Read(buffer)
+	resp, err = c.read()
 	if err != nil {
 		return nil, err
 	}
-	log.Debugf("Receive: %v bytes", resp)
 
-	err = json.Unmarshal(buffer, &data)
+	err = json.Unmarshal([]byte(resp), &data)
 	if err != nil {
 		return nil, err
 	}
@@ -199,26 +193,25 @@ func (c *Client) ReadValues() (values map[string]interface{}, err error) {
 
 // CallFunction permit to call user function
 func (c *Client) CallFunction(name string, param string) (value int, err error) {
-
+	c.sem <- 1
+	defer <-c.sem
 	log.Debugf("Function: %s, param: %s", name, param)
 
 	url := fmt.Sprintf("/%s?params=%s\n\r", name, param)
 	data := make(map[string]interface{})
-	buffer := make([]byte, 0, 0)
 
-	resp, err := c.serialPort.Write([]byte(url))
+	n, err := c.serialPort.Write([]byte(url))
 	if err != nil {
 		return value, err
 	}
 	log.Debugf("Sent: %v bytes", resp)
 
-	resp, err = c.serialPort.Read(buffer)
+	resp, err = c.read()
 	if err != nil {
 		return value, err
 	}
-	log.Debugf("Receive: %v bytes", resp)
 
-	err = json.Unmarshal(buffer, &data)
+	err = json.Unmarshal([]byte(resp), &data)
 	if err != nil {
 		return value, err
 	}
@@ -230,4 +223,26 @@ func (c *Client) CallFunction(name string, param string) (value int, err error) 
 	}
 
 	return value, err
+}
+
+
+func (c *Client) read() (string, err) {
+	buffer := make([]byte, 2048)
+	var resp strings.Builder
+
+	for {
+		n, err = c.serialPort.Read(buffer)
+		if err != nil {
+			return "", err
+		}
+		if n == 0 {
+			break
+		}
+		log.Debugf("Receive: %v bytes", n)
+		resp.Write(buffer[:n])
+	}
+
+	log.Debugf("Resp: %s", resp.String())
+
+	return resp.String(), nil
 }
