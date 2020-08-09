@@ -20,10 +20,11 @@ func (s *ArestTestSuite) SetupSuite() {
 	// Init logger
 	logrus.SetFormatter(new(prefixed.TextFormatter))
 	logrus.SetLevel(logrus.DebugLevel)
+
+	s.client = MockRestClient()
 }
 
 func (s *ArestTestSuite) BeforeSuite() {
-	s.client = MockRestClient()
 }
 
 func (s *ArestTestSuite) AfterSuite() {
@@ -38,7 +39,7 @@ func TestArestTestSuite(t *testing.T) {
 	suite.Run(t, new(ArestTestSuite))
 }
 
-func (s *ArestTestSuite) testSetMode() {
+func (s *ArestTestSuite) TestSetMode() {
 
 	fixture := `{"message": "Pin D0 set to output", "id": "002", "name": "TFP", "hardware": "arduino", "connected": true}`
 	responder := httpmock.NewStringResponder(200, fixture)
@@ -52,7 +53,7 @@ func (s *ArestTestSuite) testSetMode() {
 
 }
 
-func (s *ArestTestSuite) testDigitalWrite() {
+func (s *ArestTestSuite) TestDigitalWrite() {
 
 	fixture := `{"message": "Pin D0 set to 1", "id": "002", "name": "TFP", "hardware": "arduino", "connected": true}`
 	responder := httpmock.NewStringResponder(200, fixture)
@@ -65,10 +66,13 @@ func (s *ArestTestSuite) testDigitalWrite() {
 	assert.NoError(s.T(), err)
 }
 
-func (s *ArestTestSuite) testDigitalRead() {
+func (s *ArestTestSuite) TestDigitalRead() {
 
-	fixture := `{"return_value": 1, "id": "002", "name": "TFP", "hardware": "arduino", "connected": true}`
-	responder := httpmock.NewStringResponder(200, fixture)
+	//fixture := `{"return_value": 1, "id": "002", "name": "TFP", "hardware": "arduino", "connected": true}`
+	fixture := map[string]interface{}{
+		"return_value": 1,
+	}
+	responder := httpmock.NewJsonResponderOrPanic(200, fixture)
 	fakeURL := "http://localhost/digital/0"
 	httpmock.RegisterResponder("GET", fakeURL, responder)
 
@@ -77,10 +81,14 @@ func (s *ArestTestSuite) testDigitalRead() {
 	assert.Equal(s.T(), "high", level.String())
 }
 
-func (s *ArestTestSuite) testReadValue() {
+func (s *ArestTestSuite) TestReadValue() {
 
-	fixture := `{"isRebooted": true, "id": "002", "name": "TFP", "hardware": "arduino", "connected": true}`
-	responder := httpmock.NewStringResponder(200, fixture)
+	//fixture := `{"isRebooted": true, "id": "002", "name": "TFP", "hardware": "arduino", "connected": true}`
+	fixture := map[string]interface{}{
+		"isRebooted": true,
+	}
+	responder := httpmock.NewJsonResponderOrPanic(200, fixture)
+
 	fakeURL := "http://localhost/isRebooted"
 	httpmock.RegisterResponder("GET", fakeURL, responder)
 
@@ -93,23 +101,31 @@ func (s *ArestTestSuite) testReadValue() {
 	assert.Error(s.T(), err)
 }
 
-func (s *ArestTestSuite) testReadValues() {
+func (s *ArestTestSuite) TestReadValues() {
 
-	fixture := `{"variables": {"isRebooted": false}, "id": "002", "name": "TFP", "hardware": "arduino", "connected": true}`
-	responder := httpmock.NewStringResponder(200, fixture)
+	//fixture := `{"variables": {"isRebooted": false}, "id": "002", "name": "TFP", "hardware": "arduino", "connected": true}`
+	fixture := map[string]interface{}{
+		"variables": map[string]interface{}{
+			"isRebooted": false,
+		},
+	}
+	responder := httpmock.NewJsonResponderOrPanic(200, fixture)
 	fakeURL := "http://localhost/"
 	httpmock.RegisterResponder("GET", fakeURL, responder)
 
 	values, err := s.client.ReadValues()
 	assert.NoError(s.T(), err)
-	assert.Equal(s.T(), true, values["isRebooted"].(bool))
+	assert.Equal(s.T(), false, values["isRebooted"].(bool))
 
 }
 
-func (s *ArestTestSuite) testCallFunction() {
+func (s *ArestTestSuite) TestCallFunction() {
 
-	fixture := `{"return_value": 1, "id": "002", "name": "TFP", "hardware": "arduino", "connected": true}`
-	responder := httpmock.NewStringResponder(200, fixture)
+	//fixture := `{"return_value": 1, "id": "002", "name": "TFP", "hardware": "arduino", "connected": true}`
+	fixture := map[string]interface{}{
+		"return_value": 1,
+	}
+	responder := httpmock.NewJsonResponderOrPanic(200, fixture)
 	fakeURL := "http://localhost/acknoledgeRebooted?params=test"
 	httpmock.RegisterResponder("POST", fakeURL, responder)
 

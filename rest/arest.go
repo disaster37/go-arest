@@ -81,7 +81,7 @@ func (c *Client) DigitalRead(pin int) (level arest.Level, err error) {
 		return nil, err
 	}
 
-	log.Debugf("Resp: %s", resp.String())
+	log.Debugf("Resp: %s, %+v", resp.String(), data)
 
 	level = arest.NewLevel()
 	if int(data["return_value"].(float64)) == arest.High {
