@@ -3,6 +3,7 @@ package serial
 import (
 	"encoding/json"
 	"fmt"
+	"strings"
 
 	"github.com/disaster37/go-arest"
 	"github.com/pkg/errors"
@@ -129,26 +130,27 @@ func (c *Client) ReadValue(name string) (value interface{}, err error) {
 	url := fmt.Sprintf("/%s\n\r", name)
 	data := make(map[string]interface{})
 	buffer := make([]byte, 2048)
+	var resp strings.Builder
 
-	resp, err := c.serialPort.Write([]byte(url))
+	n, err := c.serialPort.Write([]byte(url))
 	if err != nil {
 		return nil, err
 	}
-	log.Debugf("Sent: %v bytes", resp)
+	log.Debugf("Sent: %v bytes", n)
 
 	for {
-		resp, err = c.serialPort.Read(buffer)
+		n, err = c.serialPort.Read(buffer)
 		if err != nil {
 			return nil, err
 		}
-		if resp == 0 {
+		if n == 0 {
 			break
 		}
-		log.Debugf("Receive: %v bytes", resp)
-		log.Debugf("%s", string(buffer))
+		log.Debugf("Receive: %v bytes", n)
+		resp.Write(buffer[:n])
 	}
 
-	err = json.Unmarshal(buffer, &data)
+	err = json.Unmarshal(resp, &data)
 	if err != nil {
 		return nil, err
 	}
