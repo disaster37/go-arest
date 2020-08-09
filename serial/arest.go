@@ -239,7 +239,7 @@ func (c *Client) read() (string, error) {
 		resp.Write(buffer[:n])
 		log.Debug(string(buffer[:n]))
 
-		if strings.Contains(string(buff[:n]), "\n") {
+		if strings.Contains(string(buffer[:n]), "\n") {
 			break
 		}
 	}
