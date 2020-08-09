@@ -15,5 +15,5 @@ require (
 	github.com/x-cray/logrus-prefixed-formatter v0.5.2
 	go.bug.st/serial v1.1.0
 	golang.org/x/sys v0.0.0-20200806125547-5acd03effb82 // indirect
-	google.golang.org/appengine v1.6.6 // indirect
+	google.golang.org/appengine v1.6.6
 )
