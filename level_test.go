@@ -8,13 +8,13 @@ func (s *ArestTestSuite) testLevel() {
 
 	// High
 	level.SetLevelHigh()
-	assert.Equal(s.T(), high, level.Level())
+	assert.Equal(s.T(), High, level.Level())
 	assert.Equal(s.T(), "high", level.String())
 	assert.Equal(s.T(), true, level.IsHigh())
 
 	// Low
 	level.SetLevelLow()
-	assert.Equal(s.T(), low, level.Level())
+	assert.Equal(s.T(), Low, level.Level())
 	assert.Equal(s.T(), "low", level.String())
 	assert.Equal(s.T(), true, level.IsLow())
 }

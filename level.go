@@ -1,8 +1,8 @@
 package arest
 
 const (
-	high int = 1
-	low  int = 0
+	High int = 1
+	Low  int = 0
 )
 
 // Level is the digital pin level (HIGH or LOW)
@@ -44,20 +44,20 @@ func (l *LevelImp) Level() int {
 
 // SetLevelHigh permit to set the high level
 func (l *LevelImp) SetLevelHigh() {
-	l.level = high
+	l.level = High
 }
 
 // SetLevelLow permit to set the high level
 func (l *LevelImp) SetLevelLow() {
-	l.level = low
+	l.level = Low
 }
 
 // String return the current level as human name
 func (l *LevelImp) String() string {
 	switch l.level {
-	case high:
+	case High:
 		return "high"
-	case low:
+	case Low:
 		return "low"
 	}
 
@@ -66,10 +66,10 @@ func (l *LevelImp) String() string {
 
 // IsHigh return true if level is high
 func (l *LevelImp) IsHigh() bool {
-	return l.level == high
+	return l.level == High
 }
 
 // IsLow return true if level is low
 func (l *LevelImp) IsLow() bool {
-	return l.level == low
+	return l.level == Low
 }
