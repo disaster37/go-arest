@@ -13,17 +13,18 @@ type Button interface {
 
 // ButtonImp is the default Button implementation
 type ButtonImp struct {
-	pin        int
-	client     arest.Arest
-	signal     arest.Level
-	isPushed   bool
-	isReleazed bool
-	state      bool
+	pin         int
+	client      arest.Arest
+	signal      arest.Level
+	inputPullup bool
+	isPushed    bool
+	isReleazed  bool
+	state       bool
 }
 
-func NewButton(client arest.Arest, pin int, signal arest.Level) (Button, error) {
+func NewButton(client arest.Arest, pin int, signal arest.Level, inputPullup bool) (Button, error) {
 	mode := arest.NewMode()
-	if signal.IsHigh() {
+	if !inputPullup {
 		mode.SetModeInput()
 	} else {
 		mode.SetModeInputPullup()
@@ -35,12 +36,13 @@ func NewButton(client arest.Arest, pin int, signal arest.Level) (Button, error) 
 	}
 
 	return &ButtonImp{
-		pin:        pin,
-		client:     client,
-		signal:     signal,
-		isPushed:   false,
-		isReleazed: false,
-		state:      false,
+		pin:         pin,
+		client:      client,
+		signal:      signal,
+		inputPullup: inputPullup,
+		isPushed:    false,
+		isReleazed:  false,
+		state:       false,
 	}, nil
 }
 
@@ -75,6 +77,9 @@ func (h *ButtonImp) Read() error {
 		computedLevel = level.IsHigh()
 	} else {
 		computedLevel = level.IsLow()
+	}
+	if h.inputPullup {
+		computedLevel = !computedLevel
 	}
 
 	if computedLevel && !h.state {
