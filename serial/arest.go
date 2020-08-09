@@ -235,7 +235,7 @@ func (c *Client) read() (string, error) {
 		if err != nil {
 			return "", err
 		}
-		if n == 0 {
+		if n == 0 || string(buffer[n-1]) == "\r" {
 			break
 		}
 		resp.Write(buffer[:n])
