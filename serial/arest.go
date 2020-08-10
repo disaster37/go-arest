@@ -152,7 +152,7 @@ func (c *Client) ReadValue(name string) (value interface{}, err error) {
 	}
 	log.Debugf("Sent: %v bytes", n)
 
-	raw := stream.Value()
+	raw := stream.Next()
 	var resp string
 	switch event := raw.(type) {
 	case error:
