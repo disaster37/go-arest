@@ -47,7 +47,21 @@ func NewClient(url string) (arest.Arest, error) {
 		channel:    observer.NewProperty(nil),
 	}
 
+	// Read on serial and wait is ready
+	stream := client.channel.Observe()
 	go client.read()
+
+	for {
+		<-stream.Changes()
+		stream.Next()
+		raw := stream.Value()
+		switch event := raw.(type) {
+		case ReadReady:
+			break
+		case error:
+			return nil, event
+		}
+	}
 
 	return client, nil
 }
