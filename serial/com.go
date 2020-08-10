@@ -17,10 +17,11 @@ func (c *Client) read() {
 	for !isReady {
 		_, err := c.serialPort.Write([]byte("/ready\n\r"))
 		if err != nil {
+			log.Errorf("Error when init serial port: %s", err.Error)
+			time.Sleep(1 * time.Second)
+		} else {
 			isReady = true
 			break
-		} else {
-			time.Sleep(1 * time.Second)
 		}
 	}
 
