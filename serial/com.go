@@ -13,6 +13,7 @@ func (c *Client) read() {
 	var resp strings.Builder
 
 	c.channel.Update(ReadReady{})
+	log.Debugf("Reader on serial ready")
 	for {
 		n, err := c.serialPort.Read(buffer)
 		log.Debugf("Receive: %v bytes", n)
