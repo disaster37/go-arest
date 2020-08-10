@@ -49,7 +49,7 @@ func NewClient(url string) (arest.Arest, error) {
 
 	// Read on serial and wait is ready
 	stream := client.channel.Observe()
-	go client.read()
+	go read(client)
 
 	isReady := false
 	for !isReady {
