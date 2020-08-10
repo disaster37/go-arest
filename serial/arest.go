@@ -3,8 +3,6 @@ package serial
 import (
 	"encoding/json"
 	"fmt"
-	"strings"
-	"time"
 
 	"github.com/disaster37/go-arest"
 	"github.com/imkira/go-observer"
@@ -43,11 +41,15 @@ func NewClient(url string) (arest.Arest, error) {
 		return nil, originalErr
 	}
 
-	return &Client{
+	client := &Client{
 		serialPort: serialPort,
 		sem:        make(chan int, 1),
 		channel:    observer.NewProperty(nil),
-	}, nil
+	}
+
+	go client.read()
+
+	return client, nil
 }
 
 // Client permit to get curent resty client
@@ -101,7 +103,6 @@ func (c *Client) DigitalRead(pin int) (level arest.Level, err error) {
 	url := fmt.Sprintf("/digital/%d\n\r", pin)
 	data := make(map[string]interface{})
 
-	go c.read()
 	stream := c.channel.Observe()
 
 	n, err := c.serialPort.Write([]byte(url))
@@ -110,6 +111,8 @@ func (c *Client) DigitalRead(pin int) (level arest.Level, err error) {
 	}
 	log.Debugf("Sent: %v bytes", n)
 
+	<-stream.Changes()
+	stream.Next()
 	raw := stream.Value()
 	var resp string
 	switch event := raw.(type) {
@@ -144,9 +147,7 @@ func (c *Client) ReadValue(name string) (value interface{}, err error) {
 	url := fmt.Sprintf("/%s\n\r", name)
 	data := make(map[string]interface{})
 
-	go c.read()
 	stream := c.channel.Observe()
-	time.Sleep(10 * time.Second)
 
 	n, err := c.serialPort.Write([]byte(url))
 	if err != nil {
@@ -189,7 +190,6 @@ func (c *Client) ReadValues() (values map[string]interface{}, err error) {
 	url := "/\n\r"
 	data := make(map[string]interface{})
 
-	go c.read()
 	stream := c.channel.Observe()
 
 	n, err := c.serialPort.Write([]byte(url))
@@ -198,6 +198,8 @@ func (c *Client) ReadValues() (values map[string]interface{}, err error) {
 	}
 	log.Debugf("Sent: %v bytes", n)
 
+	<-stream.Changes()
+	stream.Next()
 	raw := stream.Value()
 	var resp string
 	switch event := raw.(type) {
@@ -231,7 +233,6 @@ func (c *Client) CallFunction(name string, param string) (value int, err error) 
 	url := fmt.Sprintf("/%s?params=%s\n\r", name, param)
 	data := make(map[string]interface{})
 
-	go c.read()
 	stream := c.channel.Observe()
 
 	n, err := c.serialPort.Write([]byte(url))
@@ -240,6 +241,8 @@ func (c *Client) CallFunction(name string, param string) (value int, err error) 
 	}
 	log.Debugf("Sent: %v bytes", n)
 
+	<-stream.Changes()
+	stream.Next()
 	raw := stream.Value()
 	var resp string
 	switch event := raw.(type) {
@@ -262,38 +265,4 @@ func (c *Client) CallFunction(name string, param string) (value int, err error) 
 	}
 
 	return value, err
-}
-
-func (c *Client) read() {
-	buffer := make([]byte, 2048)
-	var resp strings.Builder
-
-	for {
-		n, err := c.serialPort.Read(buffer)
-		log.Debugf("Receive: %v bytes", n)
-		if err != nil {
-			c.channel.Update(err)
-		}
-		if n == 0 {
-			break
-		}
-		resp.Write(buffer[:n])
-		log.Debug(string(buffer[:n]))
-
-		if strings.Contains(string(buffer[:n]), "\n") {
-			break
-		}
-	}
-
-	log.Debugf("Resp: %s", resp.String())
-
-	c.channel.Update(resp.String())
-}
-
-func (c *Client) takeSemaphore() {
-	c.sem <- 1
-}
-
-func (c *Client) releazeSemaphore() {
-	<-c.sem
 }
