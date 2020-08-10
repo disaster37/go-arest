@@ -66,6 +66,8 @@ func NewClient(url string) (arest.Arest, error) {
 		}
 	}
 
+	time.Sleep(10 * time.Second)
+
 	return client, nil
 }
 
@@ -165,8 +167,6 @@ func (c *Client) ReadValue(name string) (value interface{}, err error) {
 	data := make(map[string]interface{})
 
 	stream := c.channel.Observe()
-
-	time.Sleep(10 * time.Second)
 
 	n, err := c.serialPort.Write([]byte(url))
 	if err != nil {
