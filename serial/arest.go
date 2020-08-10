@@ -162,6 +162,8 @@ func (c *Client) ReadValue(name string) (value interface{}, err error) {
 
 	}
 
+	log.Debug("Read: %s", resp)
+
 	err = json.Unmarshal([]byte(resp), &data)
 	if err != nil {
 		return nil, err
