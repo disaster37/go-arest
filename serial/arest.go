@@ -3,6 +3,7 @@ package serial
 import (
 	"encoding/json"
 	"fmt"
+	"time"
 
 	"github.com/disaster37/go-arest"
 	"github.com/imkira/go-observer"
@@ -49,7 +50,7 @@ func NewClient(url string) (arest.Arest, error) {
 
 	// Read on serial and wait is ready
 	stream := client.channel.Observe()
-	go read(client)
+	go client.read()
 
 	isReady := false
 	for !isReady {
@@ -164,6 +165,8 @@ func (c *Client) ReadValue(name string) (value interface{}, err error) {
 	data := make(map[string]interface{})
 
 	stream := c.channel.Observe()
+
+	time.Sleep(10 * time.Second)
 
 	n, err := c.serialPort.Write([]byte(url))
 	if err != nil {

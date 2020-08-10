@@ -8,7 +8,7 @@ import (
 
 type ReadReady struct{}
 
-func read(c *Client) {
+func (c *Client) read() {
 	buffer := make([]byte, 2048)
 	var resp strings.Builder
 
