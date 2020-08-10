@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/disaster37/go-arest"
 	"github.com/imkira/go-observer"
@@ -145,6 +146,7 @@ func (c *Client) ReadValue(name string) (value interface{}, err error) {
 
 	go c.read()
 	stream := c.channel.Observe()
+	time.Sleep(10 * time.Second)
 
 	n, err := c.serialPort.Write([]byte(url))
 	if err != nil {
