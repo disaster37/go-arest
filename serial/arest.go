@@ -55,6 +55,8 @@ func NewClient(url string) (arest.Arest, error) {
 		<-stream.Changes()
 		stream.Next()
 		raw := stream.Value()
+
+		log.Debug("Receive value")
 		switch event := raw.(type) {
 		case ReadReady:
 			break
