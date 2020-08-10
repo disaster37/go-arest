@@ -2,6 +2,7 @@ package serial
 
 import (
 	"strings"
+	"time"
 
 	log "github.com/sirupsen/logrus"
 )
@@ -11,6 +12,17 @@ type ReadReady struct{}
 func (c *Client) read() {
 	buffer := make([]byte, 2048)
 	var resp strings.Builder
+
+	isReady := false
+	for !isReady {
+		_, err := c.serialPort.Write([]byte("/ready\n\r"))
+		if err != nil {
+			isReady = true
+			break
+		} else {
+			time.Sleep(1 * time.Second)
+		}
+	}
 
 	c.channel.Update(ReadReady{})
 	log.Debugf("Reader on serial ready")

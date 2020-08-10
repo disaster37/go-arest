@@ -3,7 +3,6 @@ package serial
 import (
 	"encoding/json"
 	"fmt"
-	"time"
 
 	"github.com/disaster37/go-arest"
 	"github.com/imkira/go-observer"
@@ -67,7 +66,7 @@ func NewClient(url string) (arest.Arest, error) {
 	}
 
 	// Wait time to read
-	time.Sleep(1 * time.Second)
+	//time.Sleep(1 * time.Second)
 
 	return client, nil
 }
