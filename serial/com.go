@@ -23,6 +23,7 @@ func (c *Client) read() {
 		if n == 0 {
 			log.Debugf("Read: %s", resp.String())
 			c.channel.Update(resp.String())
+			resp.Reset()
 		}
 		resp.Write(buffer[:n])
 		log.Debug(string(buffer[:n]))
@@ -30,6 +31,7 @@ func (c *Client) read() {
 		if strings.Contains(string(buffer[:n]), "\n") {
 			log.Debugf("Read: %s", resp.String())
 			c.channel.Update(resp.String())
+			resp.Reset()
 		}
 	}
 

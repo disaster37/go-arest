@@ -67,7 +67,7 @@ func NewClient(url string) (arest.Arest, error) {
 	}
 
 	// Wait time to read
-	time.Sleep(1 * time.Millisecond)
+	time.Sleep(1 * time.Second)
 
 	return client, nil
 }
