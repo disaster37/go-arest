@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/disaster37/go-arest"
 	"github.com/pkg/errors"
@@ -40,10 +41,14 @@ func NewClient(url string) (arest.Arest, error) {
 		return nil, originalErr
 	}
 
-	return &Client{
+	client := &Client{
 		serialPort: serialPort,
 		sem:        make(chan int, 1),
-	}, nil
+	}
+
+	time.Sleep(time.Second * 1)
+
+	return client, nil
 }
 
 // Client permit to get curent resty client
