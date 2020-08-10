@@ -4,6 +4,7 @@ go 1.13
 
 require (
 	github.com/go-resty/resty/v2 v2.3.0
+	github.com/imkira/go-observer v1.0.3
 	github.com/jarcoal/httpmock v1.0.5
 	github.com/labstack/gommon v0.3.0 // indirect
 	github.com/magiconair/properties v1.8.1 // indirect

@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/disaster37/go-arest"
+	"github.com/imkira/go-observer"
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
 	"go.bug.st/serial"
@@ -15,6 +16,7 @@ import (
 type Client struct {
 	serialPort serial.Port
 	sem        chan int
+	channel    observer.Property
 }
 
 // NewClient permit to initialize new client Object
@@ -43,6 +45,7 @@ func NewClient(url string) (arest.Arest, error) {
 	return &Client{
 		serialPort: serialPort,
 		sem:        make(chan int, 1),
+		channel:    observer.NewProperty(nil),
 	}, nil
 }
 
@@ -97,15 +100,23 @@ func (c *Client) DigitalRead(pin int) (level arest.Level, err error) {
 	url := fmt.Sprintf("/digital/%d\n\r", pin)
 	data := make(map[string]interface{})
 
+	go c.read()
+	stream := c.channel.Observe()
+
 	n, err := c.serialPort.Write([]byte(url))
 	if err != nil {
 		return nil, err
 	}
 	log.Debugf("Sent: %v bytes", n)
 
-	resp, err := c.read()
-	if err != nil {
-		return nil, err
+	raw := stream.Value()
+	var resp string
+	switch event := raw.(type) {
+	case error:
+		return nil, event
+	case string:
+		resp = event
+
 	}
 
 	err = json.Unmarshal([]byte(resp), &data)
@@ -132,15 +143,23 @@ func (c *Client) ReadValue(name string) (value interface{}, err error) {
 	url := fmt.Sprintf("/%s\n\r", name)
 	data := make(map[string]interface{})
 
+	go c.read()
+	stream := c.channel.Observe()
+
 	n, err := c.serialPort.Write([]byte(url))
 	if err != nil {
 		return nil, err
 	}
 	log.Debugf("Sent: %v bytes", n)
 
-	resp, err := c.read()
-	if err != nil {
-		return nil, err
+	raw := stream.Value()
+	var resp string
+	switch event := raw.(type) {
+	case error:
+		return nil, event
+	case string:
+		resp = event
+
 	}
 
 	err = json.Unmarshal([]byte(resp), &data)
@@ -164,15 +183,23 @@ func (c *Client) ReadValues() (values map[string]interface{}, err error) {
 	url := "/\n\r"
 	data := make(map[string]interface{})
 
+	go c.read()
+	stream := c.channel.Observe()
+
 	n, err := c.serialPort.Write([]byte(url))
 	if err != nil {
 		return nil, err
 	}
 	log.Debugf("Sent: %v bytes", n)
 
-	resp, err := c.read()
-	if err != nil {
-		return nil, err
+	raw := stream.Value()
+	var resp string
+	switch event := raw.(type) {
+	case error:
+		return nil, event
+	case string:
+		resp = event
+
 	}
 
 	err = json.Unmarshal([]byte(resp), &data)
@@ -198,15 +225,23 @@ func (c *Client) CallFunction(name string, param string) (value int, err error) 
 	url := fmt.Sprintf("/%s?params=%s\n\r", name, param)
 	data := make(map[string]interface{})
 
+	go c.read()
+	stream := c.channel.Observe()
+
 	n, err := c.serialPort.Write([]byte(url))
 	if err != nil {
 		return value, err
 	}
 	log.Debugf("Sent: %v bytes", n)
 
-	resp, err := c.read()
-	if err != nil {
-		return value, err
+	raw := stream.Value()
+	var resp string
+	switch event := raw.(type) {
+	case error:
+		return value, event
+	case string:
+		resp = event
+
 	}
 
 	err = json.Unmarshal([]byte(resp), &data)
@@ -223,7 +258,7 @@ func (c *Client) CallFunction(name string, param string) (value int, err error) 
 	return value, err
 }
 
-func (c *Client) read() (string, error) {
+func (c *Client) read() {
 	buffer := make([]byte, 2048)
 	var resp strings.Builder
 
@@ -231,7 +266,7 @@ func (c *Client) read() (string, error) {
 		n, err := c.serialPort.Read(buffer)
 		log.Debugf("Receive: %v bytes", n)
 		if err != nil {
-			return "", err
+			c.channel.Update(err)
 		}
 		if n == 0 {
 			break
@@ -246,7 +281,7 @@ func (c *Client) read() (string, error) {
 
 	log.Debugf("Resp: %s", resp.String())
 
-	return resp.String(), nil
+	c.channel.Update(resp.String())
 }
 
 func (c *Client) takeSemaphore() {
