@@ -51,15 +51,15 @@ func NewClient(url string) (arest.Arest, error) {
 	stream := client.channel.Observe()
 	go client.read()
 
-	for {
+	isReady := false
+	for !isReady {
 		<-stream.Changes()
 		stream.Next()
 		raw := stream.Value()
 
-		log.Debug("Receive value")
 		switch event := raw.(type) {
 		case ReadReady:
-			break
+			isReady = true
 		case error:
 			return nil, event
 		}
