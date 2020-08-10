@@ -64,12 +64,17 @@ func (c *Client) SetPinMode(pin int, mode arest.Mode) (err error) {
 
 	url := fmt.Sprintf("/mode/%d/%s\n\r", pin, mode.Mode())
 
-	n, err := c.serialPort.Write([]byte(url))
+	_, err = c.serialPort.Write([]byte(url))
 	if err != nil {
 		return err
 	}
 
-	log.Debugf("Sent: %v bytes", n)
+	resp, err := c.read()
+	if err != nil {
+		return err
+	}
+
+	log.Debugf("Resp: %s", resp)
 
 	return nil
 
@@ -83,12 +88,17 @@ func (c *Client) DigitalWrite(pin int, level arest.Level) (err error) {
 
 	url := fmt.Sprintf("/digital/%d/%d\n\r", pin, level.Level())
 
-	n, err := c.serialPort.Write([]byte(url))
+	_, err = c.serialPort.Write([]byte(url))
 	if err != nil {
 		return err
 	}
 
-	log.Debugf("Sent: %v bytes", n)
+	resp, err := c.read()
+	if err != nil {
+		return err
+	}
+
+	log.Debugf("Resp: %s", resp)
 
 	return err
 }
