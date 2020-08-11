@@ -21,7 +21,13 @@ type Client struct {
 }
 
 // NewClient permit to initialize new client Object
-func NewClient(url string, timeout time.Duration) (arest.Arest, error) {
+func NewClient(url string, timeout time.Duration, loglevel string) (arest.Arest, error) {
+
+	level, err := log.ParseLevel(loglevel)
+	if err != nil {
+		return nil, err
+	}
+	log.SetLevel(level)
 
 	serialPort, err := open(url)
 	if err != nil {
