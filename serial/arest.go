@@ -16,6 +16,7 @@ import (
 type Client struct {
 	serialPort serial.Port
 	sem        chan int
+	timeout    time.Duration
 }
 
 // NewClient permit to initialize new client Object
@@ -44,6 +45,7 @@ func NewClient(url string) (arest.Arest, error) {
 	client := &Client{
 		serialPort: serialPort,
 		sem:        make(chan int, 1),
+		timeout:    10 * time.Second,
 	}
 
 	time.Sleep(time.Second * 1)
@@ -241,11 +243,15 @@ func (c *Client) CallFunction(name string, param string) (value int, err error) 
 func (c *Client) read() (string, error) {
 	buffer := make([]byte, 2048)
 	var resp strings.Builder
+	finished := false
+
+	go c.watchdog(&finished)
 
 	for {
 		n, err := c.serialPort.Read(buffer)
 		log.Debugf("Receive: %v bytes", n)
 		if err != nil {
+			finished = true
 			return "", err
 		}
 		if n == 0 {
@@ -259,6 +265,8 @@ func (c *Client) read() (string, error) {
 		}
 	}
 
+	finished = true
+
 	log.Debugf("Resp: %s", resp.String())
 
 	return resp.String(), nil
@@ -270,4 +278,11 @@ func (c *Client) takeSemaphore() {
 
 func (c *Client) releazeSemaphore() {
 	<-c.sem
+}
+
+func (c *Client) watchdog(finished *bool) {
+	time.Sleep(c.timeout)
+	if !*finished {
+		c.Client().Close()
+	}
 }
