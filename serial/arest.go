@@ -282,6 +282,7 @@ func (c *Client) watchdog(finished *bool) {
 					log.Errorf("Error when try to reconnect on serial port: %s", err.Error())
 					time.Sleep(1 * time.Second)
 				} else {
+					log.Debug("Successfully reopened serial port")
 					c.serialPort = serialPort
 					isConnected = true
 				}
