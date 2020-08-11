@@ -273,6 +273,8 @@ func (c *Client) watchdog(finished *bool) {
 		go func() {
 
 			isConnected := false
+			c.takeSemaphore()
+			defer c.releazeSemaphore()
 
 			for !isConnected {
 				serialPort, err := open(c.url)
