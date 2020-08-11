@@ -104,20 +104,12 @@ func (h *LedImp) Reset() error {
 func (h *LedImp) Blink(duration time.Duration) *time.Timer {
 
 	timer := time.NewTimer(duration)
-	quit := make(chan bool)
 
-	// Lauch timer for blink duration duration
-	go func() {
-		<-timer.C
-		quit <- true
-	}()
-
-	// Start a loop to blink led
 	go func() {
 		expectedState := h.state
 		for {
 			select {
-			case <-quit:
+			case <-timer.C:
 				if expectedState {
 					err := h.TurnOn()
 					if err != nil {
@@ -138,7 +130,6 @@ func (h *LedImp) Blink(duration time.Duration) *time.Timer {
 				time.Sleep(1 * time.Second)
 			}
 		}
-
 	}()
 
 	return timer
