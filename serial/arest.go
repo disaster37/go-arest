@@ -17,35 +17,22 @@ type Client struct {
 	serialPort serial.Port
 	sem        chan int
 	timeout    time.Duration
+	url        string
 }
 
 // NewClient permit to initialize new client Object
-func NewClient(url string) (arest.Arest, error) {
-	mode := &serial.Mode{
-		BaudRate: 115200,
-	}
-	serialPort, err := serial.Open(url, mode)
-	if err != nil {
-		log.Errorf("Error appear when open serial port, we scrut serial port")
-		originalErr := err
-		ports, err := serial.GetPortsList()
-		if err != nil {
-			log.Error(err)
-		}
-		if len(ports) == 0 {
-			log.Info("No serial ports found!")
-		}
-		for _, port := range ports {
-			fmt.Printf("Found port: %v\n", port)
-		}
+func NewClient(url string, timeout time.Duration) (arest.Arest, error) {
 
-		return nil, originalErr
+	serialPort, err := open(url)
+	if err != nil {
+		return nil, err
 	}
 
 	client := &Client{
 		serialPort: serialPort,
 		sem:        make(chan int, 1),
-		timeout:    10 * time.Second,
+		timeout:    timeout,
+		url:        url,
 	}
 
 	time.Sleep(time.Second * 1)
@@ -284,5 +271,47 @@ func (c *Client) watchdog(finished *bool) {
 	time.Sleep(c.timeout)
 	if !*finished {
 		c.Client().Close()
+		// Try to reopen it
+		go func() {
+
+			isConnected := false
+
+			for !isConnected {
+				serialPort, err := open(c.url)
+				if err != nil {
+					log.Errorf("Error when try to reconnect on serial port: %s", err.Error())
+					time.Sleep(1 * time.Second)
+				} else {
+					c.serialPort = serialPort
+					isConnected = true
+				}
+			}
+
+		}()
 	}
+}
+
+func open(url string) (serial.Port, error) {
+	mode := &serial.Mode{
+		BaudRate: 115200,
+	}
+	serialPort, err := serial.Open(url, mode)
+	if err != nil {
+		log.Errorf("Error appear when open serial port, we scrut serial port")
+		originalErr := err
+		ports, err := serial.GetPortsList()
+		if err != nil {
+			log.Error(err)
+		}
+		if len(ports) == 0 {
+			log.Info("No serial ports found!")
+		}
+		for _, port := range ports {
+			fmt.Printf("Found port: %v\n", port)
+		}
+
+		return nil, originalErr
+	}
+
+	return serialPort, nil
 }
