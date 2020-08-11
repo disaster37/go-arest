@@ -104,37 +104,41 @@ func (h *LedImp) Reset() error {
 func (h *LedImp) Blink(duration time.Duration) *time.Timer {
 
 	timer := time.NewTimer(duration)
-	isFinished := false
+	quit := make(chan bool)
 
 	// Lauch timer for blink duration duration
 	go func() {
 		<-timer.C
-		isFinished = true
+		quit <- true
 	}()
 
 	// Start a loop to blink led
 	go func() {
 		expectedState := h.state
-		for !isFinished {
-			err := h.Toogle()
-			if err != nil {
-				log.Errorf("Error appear when toogle led: %s", err.Error())
+		for {
+			select {
+			case <-quit:
+				if expectedState {
+					err := h.TurnOn()
+					if err != nil {
+						log.Errorf("Error appear when turn on led: %s", err.Error())
+					}
+				} else {
+					err := h.TurnOff()
+					if err != nil {
+						log.Errorf("Error appear when turn off led: %s", err.Error())
+					}
+
+				}
+			default:
+				err := h.Toogle()
+				if err != nil {
+					log.Errorf("Error appear when toogle led: %s", err.Error())
+				}
+				time.Sleep(1 * time.Second)
 			}
-			time.Sleep(1 * time.Second)
 		}
 
-		if expectedState {
-			err := h.TurnOn()
-			if err != nil {
-				log.Errorf("Error appear when turn on led: %s", err.Error())
-			}
-		} else {
-			err := h.TurnOff()
-			if err != nil {
-				log.Errorf("Error appear when turn off led: %s", err.Error())
-			}
-
-		}
 	}()
 
 	return timer
