@@ -35,8 +35,6 @@ func NewClient(url string, timeout time.Duration) (arest.Arest, error) {
 		url:        url,
 	}
 
-	time.Sleep(time.Second * 1)
-
 	return client, nil
 }
 
@@ -313,6 +311,8 @@ func open(url string) (serial.Port, error) {
 
 		return nil, originalErr
 	}
+
+	time.Sleep(time.Second * 1)
 
 	return serialPort, nil
 }
