@@ -125,10 +125,15 @@ func (h *LedImp) Blink(duration time.Duration) *time.Timer {
 
 		if expectedState {
 			err := h.TurnOn()
-			log.Errorf("Error appear when turn on led: %s", err.Error())
+			if err != nil {
+				log.Errorf("Error appear when turn on led: %s", err.Error())
+			}
 		} else {
 			err := h.TurnOff()
-			log.Errorf("Error appear when turn off led: %s", err.Error())
+			if err != nil {
+				log.Errorf("Error appear when turn off led: %s", err.Error())
+			}
+
 		}
 	}()
 
