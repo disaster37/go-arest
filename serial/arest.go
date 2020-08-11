@@ -8,7 +8,6 @@ import (
 
 	"github.com/disaster37/go-arest"
 	"github.com/pkg/errors"
-	log "github.com/sirupsen/logrus"
 	"go.bug.st/serial"
 )
 
@@ -21,13 +20,11 @@ type Client struct {
 }
 
 // NewClient permit to initialize new client Object
-func NewClient(url string, timeout time.Duration, loglevel string) (arest.Arest, error) {
+func NewClient(url string, timeout time.Duration, debug bool) (arest.Arest, error) {
 
-	level, err := log.ParseLevel(loglevel)
-	if err != nil {
-		return nil, err
+	if debug {
+		arest.IsDebug = true
 	}
-	log.SetLevel(level)
 
 	serialPort, err := open(url)
 	if err != nil {
@@ -53,7 +50,7 @@ func (c *Client) Client() serial.Port {
 func (c *Client) SetPinMode(pin int, mode arest.Mode) (err error) {
 	c.takeSemaphore()
 	defer c.releazeSemaphore()
-	log.Debugf("Pin: %d, Mode: %s", pin, mode.String())
+	arest.Debug("Pin: %d, Mode: %s", pin, mode.String())
 
 	url := fmt.Sprintf("/mode/%d/%s\n\r", pin, mode.Mode())
 
@@ -67,7 +64,7 @@ func (c *Client) SetPinMode(pin int, mode arest.Mode) (err error) {
 		return err
 	}
 
-	log.Debugf("Resp: %s", resp)
+	arest.Debug("Resp: %s", resp)
 
 	return nil
 
@@ -77,7 +74,7 @@ func (c *Client) SetPinMode(pin int, mode arest.Mode) (err error) {
 func (c *Client) DigitalWrite(pin int, level arest.Level) (err error) {
 	c.takeSemaphore()
 	defer c.releazeSemaphore()
-	log.Debugf("Pin: %d, Level: %s", pin, level.String())
+	arest.Debug("Pin: %d, Level: %s", pin, level.String())
 
 	url := fmt.Sprintf("/digital/%d/%d\n\r", pin, level.Level())
 
@@ -91,7 +88,7 @@ func (c *Client) DigitalWrite(pin int, level arest.Level) (err error) {
 		return err
 	}
 
-	log.Debugf("Resp: %s", resp)
+	arest.Debug("Resp: %s", resp)
 
 	return err
 }
@@ -100,21 +97,22 @@ func (c *Client) DigitalWrite(pin int, level arest.Level) (err error) {
 func (c *Client) DigitalRead(pin int) (level arest.Level, err error) {
 	c.takeSemaphore()
 	defer c.releazeSemaphore()
-	log.Debugf("Pin: %d", pin)
+	arest.Debug("Pin: %d", pin)
 
 	url := fmt.Sprintf("/digital/%d\n\r", pin)
 	data := make(map[string]interface{})
 
-	n, err := c.serialPort.Write([]byte(url))
+	_, err = c.serialPort.Write([]byte(url))
 	if err != nil {
 		return nil, err
 	}
-	log.Debugf("Sent: %v bytes", n)
 
 	resp, err := c.read()
 	if err != nil {
 		return nil, err
 	}
+
+	arest.Debug("Resp: %s", resp)
 
 	err = json.Unmarshal([]byte(resp), &data)
 	if err != nil {
@@ -135,21 +133,22 @@ func (c *Client) DigitalRead(pin int) (level arest.Level, err error) {
 func (c *Client) ReadValue(name string) (value interface{}, err error) {
 	c.takeSemaphore()
 	defer c.releazeSemaphore()
-	log.Debugf("Value name: %s", name)
+	arest.Debug("Value name: %s", name)
 
 	url := fmt.Sprintf("/%s\n\r", name)
 	data := make(map[string]interface{})
 
-	n, err := c.serialPort.Write([]byte(url))
+	_, err = c.serialPort.Write([]byte(url))
 	if err != nil {
 		return nil, err
 	}
-	log.Debugf("Sent: %v bytes", n)
 
 	resp, err := c.read()
 	if err != nil {
 		return nil, err
 	}
+
+	arest.Debug("Resp: %s", resp)
 
 	err = json.Unmarshal([]byte(resp), &data)
 	if err != nil {
@@ -172,16 +171,17 @@ func (c *Client) ReadValues() (values map[string]interface{}, err error) {
 	url := "/\n\r"
 	data := make(map[string]interface{})
 
-	n, err := c.serialPort.Write([]byte(url))
+	_, err = c.serialPort.Write([]byte(url))
 	if err != nil {
 		return nil, err
 	}
-	log.Debugf("Sent: %v bytes", n)
 
 	resp, err := c.read()
 	if err != nil {
 		return nil, err
 	}
+
+	arest.Debug("Resp: %s", resp)
 
 	err = json.Unmarshal([]byte(resp), &data)
 	if err != nil {
@@ -201,21 +201,22 @@ func (c *Client) ReadValues() (values map[string]interface{}, err error) {
 func (c *Client) CallFunction(name string, param string) (value int, err error) {
 	c.takeSemaphore()
 	defer c.releazeSemaphore()
-	log.Debugf("Function: %s, param: %s", name, param)
+	arest.Debug("Function: %s, param: %s", name, param)
 
 	url := fmt.Sprintf("/%s?params=%s\n\r", name, param)
 	data := make(map[string]interface{})
 
-	n, err := c.serialPort.Write([]byte(url))
+	_, err = c.serialPort.Write([]byte(url))
 	if err != nil {
 		return value, err
 	}
-	log.Debugf("Sent: %v bytes", n)
 
 	resp, err := c.read()
 	if err != nil {
 		return value, err
 	}
+
+	arest.Debug("Resp: %s", resp)
 
 	err = json.Unmarshal([]byte(resp), &data)
 	if err != nil {
@@ -225,7 +226,7 @@ func (c *Client) CallFunction(name string, param string) (value int, err error) 
 	if temp, ok := data["return_value"]; ok {
 		value = int(temp.(float64))
 	} else {
-		errors.Errorf("Function %s not found", name)
+		err = errors.Errorf("Function %s not found", name)
 	}
 
 	return value, err
@@ -240,7 +241,6 @@ func (c *Client) read() (string, error) {
 
 	for {
 		n, err := c.serialPort.Read(buffer)
-		log.Debugf("Receive: %v bytes", n)
 		if err != nil {
 			finished = true
 			return "", err
@@ -249,7 +249,6 @@ func (c *Client) read() (string, error) {
 			break
 		}
 		resp.Write(buffer[:n])
-		log.Debug(string(buffer[:n]))
 
 		if strings.Contains(string(buffer[:n]), "\n") {
 			break
@@ -257,8 +256,6 @@ func (c *Client) read() (string, error) {
 	}
 
 	finished = true
-
-	log.Debugf("Resp: %s", resp.String())
 
 	return resp.String(), nil
 }
@@ -285,15 +282,14 @@ func (c *Client) watchdog(finished *bool) {
 			for !isConnected {
 				serialPort, err := open(c.url)
 				if err != nil {
-					log.Errorf("Error when try to reconnect on serial port: %s", err.Error())
+					arest.Debug("Error when try to reconnect on serial port: %s", err.Error())
 					time.Sleep(1 * time.Second)
 				} else {
-					log.Debug("Successfully reopened serial port")
+					arest.Debug("Successfully reopened serial port")
 					c.serialPort = serialPort
 					isConnected = true
 				}
 			}
-
 		}()
 	}
 }
@@ -304,17 +300,16 @@ func open(url string) (serial.Port, error) {
 	}
 	serialPort, err := serial.Open(url, mode)
 	if err != nil {
-		log.Errorf("Error appear when open serial port, we scrut serial port")
 		originalErr := err
 		ports, err := serial.GetPortsList()
 		if err != nil {
-			log.Error(err)
+			arest.Debug("%s", err)
 		}
 		if len(ports) == 0 {
-			log.Info("No serial ports found!")
+			arest.Debug("No serial ports found!")
 		}
 		for _, port := range ports {
-			fmt.Printf("Found port: %v\n", port)
+			arest.Debug("Found port: %v\n", port)
 		}
 
 		return nil, originalErr
