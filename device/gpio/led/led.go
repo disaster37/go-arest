@@ -128,8 +128,8 @@ func (h *LedImp) Blink(duration time.Duration) *time.Timer {
 					if err != nil {
 						log.Errorf("Error appear when turn off led: %s", err.Error())
 					}
-
 				}
+				return
 			default:
 				err := h.Toogle()
 				if err != nil {
