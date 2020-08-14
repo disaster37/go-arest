@@ -1,9 +1,10 @@
 package rest
 
 import (
+	"context"
 	"testing"
 
-	"github.com/disaster37/go-arest"
+	"github.com/disaster37/go-arest/arest"
 	"github.com/jarcoal/httpmock"
 	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
@@ -48,7 +49,7 @@ func (s *ArestTestSuite) TestSetMode() {
 
 	mode := arest.NewMode()
 	mode.SetModeOutput()
-	err := s.client.SetPinMode(0, mode)
+	err := s.client.SetPinMode(context.Background(), 0, mode)
 	assert.NoError(s.T(), err)
 
 }
@@ -62,7 +63,7 @@ func (s *ArestTestSuite) TestDigitalWrite() {
 
 	level := arest.NewLevel()
 	level.SetLevelHigh()
-	err := s.client.DigitalWrite(0, level)
+	err := s.client.DigitalWrite(context.Background(), 0, level)
 	assert.NoError(s.T(), err)
 }
 
@@ -76,7 +77,7 @@ func (s *ArestTestSuite) TestDigitalRead() {
 	fakeURL := "http://localhost/digital/0"
 	httpmock.RegisterResponder("GET", fakeURL, responder)
 
-	level, err := s.client.DigitalRead(0)
+	level, err := s.client.DigitalRead(context.Background(), 0)
 	assert.NoError(s.T(), err)
 	assert.Equal(s.T(), "high", level.String())
 }
@@ -92,12 +93,12 @@ func (s *ArestTestSuite) TestReadValue() {
 	fakeURL := "http://localhost/isRebooted"
 	httpmock.RegisterResponder("GET", fakeURL, responder)
 
-	value, err := s.client.ReadValue("isRebooted")
+	value, err := s.client.ReadValue(context.Background(), "isRebooted")
 	assert.NoError(s.T(), err)
 	assert.Equal(s.T(), true, value.(bool))
 
 	// Bad
-	value, err = s.client.ReadValue("bad")
+	value, err = s.client.ReadValue(context.Background(), "bad")
 	assert.Error(s.T(), err)
 }
 
@@ -113,7 +114,7 @@ func (s *ArestTestSuite) TestReadValues() {
 	fakeURL := "http://localhost/"
 	httpmock.RegisterResponder("GET", fakeURL, responder)
 
-	values, err := s.client.ReadValues()
+	values, err := s.client.ReadValues(context.Background())
 	assert.NoError(s.T(), err)
 	assert.Equal(s.T(), false, values["isRebooted"].(bool))
 
@@ -129,11 +130,11 @@ func (s *ArestTestSuite) TestCallFunction() {
 	fakeURL := "http://localhost/acknoledgeRebooted?params=test"
 	httpmock.RegisterResponder("POST", fakeURL, responder)
 
-	resp, err := s.client.CallFunction("acknoledgeRebooted", "test")
+	resp, err := s.client.CallFunction(context.Background(), "acknoledgeRebooted", "test")
 	assert.NoError(s.T(), err)
 	assert.Equal(s.T(), 1, resp)
 
 	// Bad
-	resp, err = s.client.CallFunction("bad", "test")
+	resp, err = s.client.CallFunction(context.Background(), "bad", "test")
 	assert.Error(s.T(), err)
 }

@@ -1,10 +1,11 @@
 package relay
 
 import (
+	"context"
 	"testing"
 
-	"github.com/disaster37/go-arest"
-	"github.com/disaster37/go-arest/rest"
+	"github.com/disaster37/go-arest/arest"
+	"github.com/disaster37/go-arest/arest/rest"
 	"github.com/jarcoal/httpmock"
 	"github.com/stretchr/testify/assert"
 )
@@ -28,11 +29,11 @@ func TestRelayRest(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, true, relay.State().IsOn())
 	assert.Equal(t, true, relay.OutputState().IsOn())
-	err = relay.On()
+	err = relay.On(context.Background())
 	assert.NoError(t, err)
 	assert.Equal(t, true, relay.State().IsOn())
 	assert.Equal(t, true, relay.OutputState().IsOn())
-	err = relay.Off()
+	err = relay.Off(context.Background())
 	assert.NoError(t, err)
 	assert.Equal(t, true, relay.State().IsOff())
 	assert.Equal(t, true, relay.OutputState().IsOff())
@@ -48,11 +49,11 @@ func TestRelayRest(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, true, relay.State().IsOff())
 	assert.Equal(t, true, relay.OutputState().IsOn())
-	err = relay.On()
+	err = relay.On(context.Background())
 	assert.NoError(t, err)
 	assert.Equal(t, true, relay.State().IsOff())
 	assert.Equal(t, true, relay.OutputState().IsOn())
-	err = relay.Off()
+	err = relay.Off(context.Background())
 	assert.NoError(t, err)
 	assert.Equal(t, true, relay.State().IsOn())
 	assert.Equal(t, true, relay.OutputState().IsOff())
@@ -68,11 +69,11 @@ func TestRelayRest(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, true, relay.State().IsOff())
 	assert.Equal(t, true, relay.OutputState().IsOn())
-	err = relay.On()
+	err = relay.On(context.Background())
 	assert.NoError(t, err)
 	assert.Equal(t, true, relay.State().IsOff())
 	assert.Equal(t, true, relay.OutputState().IsOn())
-	err = relay.Off()
+	err = relay.Off(context.Background())
 	assert.NoError(t, err)
 	assert.Equal(t, true, relay.State().IsOn())
 	assert.Equal(t, true, relay.OutputState().IsOff())
@@ -88,11 +89,11 @@ func TestRelayRest(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, true, relay.State().IsOn())
 	assert.Equal(t, true, relay.OutputState().IsOn())
-	err = relay.On()
+	err = relay.On(context.Background())
 	assert.NoError(t, err)
 	assert.Equal(t, true, relay.State().IsOn())
 	assert.Equal(t, true, relay.OutputState().IsOn())
-	err = relay.Off()
+	err = relay.Off(context.Background())
 	assert.NoError(t, err)
 	assert.Equal(t, true, relay.State().IsOff())
 	assert.Equal(t, true, relay.OutputState().IsOff())

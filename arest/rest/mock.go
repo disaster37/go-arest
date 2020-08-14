@@ -1,7 +1,7 @@
 package rest
 
 import (
-	"github.com/disaster37/go-arest"
+	"github.com/disaster37/go-arest/arest"
 	"github.com/jarcoal/httpmock"
 )
 

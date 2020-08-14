@@ -1,11 +1,12 @@
 package led
 
 import (
+	"context"
 	"testing"
 	"time"
 
-	"github.com/disaster37/go-arest"
-	"github.com/disaster37/go-arest/rest"
+	"github.com/disaster37/go-arest/arest"
+	"github.com/disaster37/go-arest/arest/rest"
 	"github.com/jarcoal/httpmock"
 	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
@@ -29,31 +30,30 @@ func TestLed(t *testing.T) {
 	assert.NoError(t, err)
 
 	// Turn on
-	err = led.TurnOn()
+	err = led.TurnOn(context.Background())
 	assert.NoError(t, err)
 	assert.Equal(t, true, led.(*LedImp).state)
 
 	// Turn off
-	err = led.TurnOff()
+	err = led.TurnOff(context.Background())
 	assert.NoError(t, err)
 	assert.Equal(t, false, led.(*LedImp).state)
 
 	// Toogle
-	led.TurnOff()
-	err = led.Toogle()
+	led.TurnOff(context.Background())
+	err = led.Toogle(context.Background())
 	assert.NoError(t, err)
 	assert.Equal(t, true, led.(*LedImp).state)
 
 	// Blink
-	led.TurnOff()
-	timer := led.Blink(1 * time.Second)
-	<-timer.C
-	time.Sleep(5 * time.Second)
+	led.TurnOff(context.Background())
+	err = led.Blink(context.Background(), 1*time.Second)
+	assert.NoError(t, err)
 	assert.Equal(t, false, led.(*LedImp).state)
 
 	// Reset
-	led.TurnOn()
-	err = led.Reset()
+	led.TurnOn(context.Background())
+	err = led.Reset(context.Background())
 	assert.NoError(t, err)
 	assert.Equal(t, true, led.(*LedImp).state)
 }

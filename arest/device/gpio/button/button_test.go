@@ -1,10 +1,11 @@
 package button
 
 import (
+	"context"
 	"testing"
 
-	"github.com/disaster37/go-arest"
-	"github.com/disaster37/go-arest/rest"
+	"github.com/disaster37/go-arest/arest"
+	"github.com/disaster37/go-arest/arest/rest"
 	"github.com/jarcoal/httpmock"
 	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
@@ -33,7 +34,7 @@ func TestInputButtonHigh(t *testing.T) {
 
 	// When read button on default state
 	httpmock.RegisterResponder("GET", "http://localhost/digital/0", responderUp)
-	err = button.Read()
+	err = button.Read(context.Background())
 	if err != nil {
 		panic(err)
 	}
@@ -45,7 +46,7 @@ func TestInputButtonHigh(t *testing.T) {
 	// When push button
 	httpmock.Reset()
 	httpmock.RegisterResponder("GET", "http://localhost/digital/0", responderDown)
-	err = button.Read()
+	err = button.Read(context.Background())
 	if err != nil {
 		panic(err)
 	}
@@ -57,7 +58,7 @@ func TestInputButtonHigh(t *testing.T) {
 	// When keep button pushed
 	httpmock.Reset()
 	httpmock.RegisterResponder("GET", "http://localhost/digital/0", responderDown)
-	err = button.Read()
+	err = button.Read(context.Background())
 	if err != nil {
 		panic(err)
 	}
@@ -69,7 +70,7 @@ func TestInputButtonHigh(t *testing.T) {
 	// When releaze button
 	httpmock.Reset()
 	httpmock.RegisterResponder("GET", "http://localhost/digital/0", responderUp)
-	err = button.Read()
+	err = button.Read(context.Background())
 	if err != nil {
 		panic(err)
 	}
@@ -81,7 +82,7 @@ func TestInputButtonHigh(t *testing.T) {
 	// When keep releaze button
 	httpmock.Reset()
 	httpmock.RegisterResponder("GET", "http://localhost/digital/0", responderUp)
-	err = button.Read()
+	err = button.Read(context.Background())
 	if err != nil {
 		panic(err)
 	}
@@ -113,7 +114,7 @@ func TestInputButtonLow(t *testing.T) {
 
 	// When read button on default state
 	httpmock.RegisterResponder("GET", "http://localhost/digital/0", responderUp)
-	err = button.Read()
+	err = button.Read(context.Background())
 	if err != nil {
 		panic(err)
 	}
@@ -125,7 +126,7 @@ func TestInputButtonLow(t *testing.T) {
 	// When push button
 	httpmock.Reset()
 	httpmock.RegisterResponder("GET", "http://localhost/digital/0", responderDown)
-	err = button.Read()
+	err = button.Read(context.Background())
 	if err != nil {
 		panic(err)
 	}
@@ -137,7 +138,7 @@ func TestInputButtonLow(t *testing.T) {
 	// When keep button pushed
 	httpmock.Reset()
 	httpmock.RegisterResponder("GET", "http://localhost/digital/0", responderDown)
-	err = button.Read()
+	err = button.Read(context.Background())
 	if err != nil {
 		panic(err)
 	}
@@ -149,7 +150,7 @@ func TestInputButtonLow(t *testing.T) {
 	// When releaze button
 	httpmock.Reset()
 	httpmock.RegisterResponder("GET", "http://localhost/digital/0", responderUp)
-	err = button.Read()
+	err = button.Read(context.Background())
 	if err != nil {
 		panic(err)
 	}
@@ -161,7 +162,7 @@ func TestInputButtonLow(t *testing.T) {
 	// When keep releaze button
 	httpmock.Reset()
 	httpmock.RegisterResponder("GET", "http://localhost/digital/0", responderUp)
-	err = button.Read()
+	err = button.Read(context.Background())
 	if err != nil {
 		panic(err)
 	}
@@ -194,7 +195,7 @@ func TestInputPullupButton(t *testing.T) {
 
 	// When read button on default state
 	httpmock.RegisterResponder("GET", "http://localhost/digital/0", responderUp)
-	err = button.Read()
+	err = button.Read(context.Background())
 	if err != nil {
 		panic(err)
 	}
@@ -206,7 +207,7 @@ func TestInputPullupButton(t *testing.T) {
 	// When push button
 	httpmock.Reset()
 	httpmock.RegisterResponder("GET", "http://localhost/digital/0", responderDown)
-	err = button.Read()
+	err = button.Read(context.Background())
 	if err != nil {
 		panic(err)
 	}
@@ -218,7 +219,7 @@ func TestInputPullupButton(t *testing.T) {
 	// When keep button pushed
 	httpmock.Reset()
 	httpmock.RegisterResponder("GET", "http://localhost/digital/0", responderDown)
-	err = button.Read()
+	err = button.Read(context.Background())
 	if err != nil {
 		panic(err)
 	}
@@ -230,7 +231,7 @@ func TestInputPullupButton(t *testing.T) {
 	// When releaze button
 	httpmock.Reset()
 	httpmock.RegisterResponder("GET", "http://localhost/digital/0", responderUp)
-	err = button.Read()
+	err = button.Read(context.Background())
 	if err != nil {
 		panic(err)
 	}
@@ -242,7 +243,7 @@ func TestInputPullupButton(t *testing.T) {
 	// When keep releaze button
 	httpmock.Reset()
 	httpmock.RegisterResponder("GET", "http://localhost/digital/0", responderUp)
-	err = button.Read()
+	err = button.Read(context.Background())
 	if err != nil {
 		panic(err)
 	}
@@ -275,7 +276,7 @@ func TestInputPullupButtonLow(t *testing.T) {
 
 	// When read button on default state
 	httpmock.RegisterResponder("GET", "http://localhost/digital/0", responderUp)
-	err = button.Read()
+	err = button.Read(context.Background())
 	if err != nil {
 		panic(err)
 	}
@@ -287,7 +288,7 @@ func TestInputPullupButtonLow(t *testing.T) {
 	// When push button
 	httpmock.Reset()
 	httpmock.RegisterResponder("GET", "http://localhost/digital/0", responderDown)
-	err = button.Read()
+	err = button.Read(context.Background())
 	if err != nil {
 		panic(err)
 	}
@@ -299,7 +300,7 @@ func TestInputPullupButtonLow(t *testing.T) {
 	// When keep button pushed
 	httpmock.Reset()
 	httpmock.RegisterResponder("GET", "http://localhost/digital/0", responderDown)
-	err = button.Read()
+	err = button.Read(context.Background())
 	if err != nil {
 		panic(err)
 	}
@@ -311,7 +312,7 @@ func TestInputPullupButtonLow(t *testing.T) {
 	// When releaze button
 	httpmock.Reset()
 	httpmock.RegisterResponder("GET", "http://localhost/digital/0", responderUp)
-	err = button.Read()
+	err = button.Read(context.Background())
 	if err != nil {
 		panic(err)
 	}
@@ -323,7 +324,7 @@ func TestInputPullupButtonLow(t *testing.T) {
 	// When keep releaze button
 	httpmock.Reset()
 	httpmock.RegisterResponder("GET", "http://localhost/digital/0", responderUp)
-	err = button.Read()
+	err = button.Read(context.Background())
 	if err != nil {
 		panic(err)
 	}
