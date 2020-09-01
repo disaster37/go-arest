@@ -297,8 +297,8 @@ func (c *Client) read(ctx context.Context) (string, error) {
 
 		for {
 			select {
-			case err := <-cheErr:
-				return err
+			case err := <-chErr:
+				return "", err
 			default:
 				n, err := c.serialPort.Read(buffer)
 				if err != nil {
