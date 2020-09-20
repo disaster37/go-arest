@@ -60,14 +60,21 @@ func (c *Client) SetPinMode(ctx context.Context, pin int, mode arest.Mode) (err 
 
 		url := fmt.Sprintf("/mode/%d/%s\n\r", pin, mode.Mode())
 
+		chErr := make(chan error)
+		chRes := make(chan string)
+		go c.read(ctx, chRes, chErr)
+
 		_, err = c.serialPort.Write([]byte(url))
 		if err != nil {
 			return err
 		}
 
-		resp, err := c.read(ctx)
-		if err != nil {
+		var resp string
+		select {
+		case err := <-chErr:
 			return err
+		case resp = <-chRes:
+
 		}
 
 		arest.Debug("Resp: %s", resp)
@@ -91,14 +98,21 @@ func (c *Client) DigitalWrite(ctx context.Context, pin int, level arest.Level) (
 
 		url := fmt.Sprintf("/digital/%d/%d\n\r", pin, level.Level())
 
+		chErr := make(chan error)
+		chRes := make(chan string)
+		go c.read(ctx, chRes, chErr)
+
 		_, err = c.serialPort.Write([]byte(url))
 		if err != nil {
 			return err
 		}
 
-		resp, err := c.read(ctx)
-		if err != nil {
+		var resp string
+		select {
+		case err := <-chErr:
 			return err
+		case resp = <-chRes:
+
 		}
 
 		arest.Debug("Resp: %s", resp)
@@ -122,14 +136,21 @@ func (c *Client) DigitalRead(ctx context.Context, pin int) (level arest.Level, e
 		url := fmt.Sprintf("/digital/%d\n\r", pin)
 		data := make(map[string]interface{})
 
+		chErr := make(chan error)
+		chRes := make(chan string)
+		go c.read(ctx, chRes, chErr)
+
 		_, err = c.serialPort.Write([]byte(url))
 		if err != nil {
 			return nil, err
 		}
 
-		resp, err := c.read(ctx)
-		if err != nil {
+		var resp string
+		select {
+		case err := <-chErr:
 			return nil, err
+		case resp = <-chRes:
+
 		}
 
 		arest.Debug("Resp: %s", resp)
@@ -166,14 +187,21 @@ func (c *Client) ReadValue(ctx context.Context, name string) (value interface{},
 		url := fmt.Sprintf("/%s\n\r", name)
 		data := make(map[string]interface{})
 
+		chErr := make(chan error)
+		chRes := make(chan string)
+		go c.read(ctx, chRes, chErr)
+
 		_, err = c.serialPort.Write([]byte(url))
 		if err != nil {
 			return nil, err
 		}
 
-		resp, err := c.read(ctx)
-		if err != nil {
+		var resp string
+		select {
+		case err := <-chErr:
 			return nil, err
+		case resp = <-chRes:
+
 		}
 
 		arest.Debug("Resp: %s", resp)
@@ -207,14 +235,21 @@ func (c *Client) ReadValues(ctx context.Context) (values map[string]interface{},
 		url := "/\n\r"
 		data := make(map[string]interface{})
 
+		chErr := make(chan error)
+		chRes := make(chan string)
+		go c.read(ctx, chRes, chErr)
+
 		_, err = c.serialPort.Write([]byte(url))
 		if err != nil {
 			return nil, err
 		}
 
-		resp, err := c.read(ctx)
-		if err != nil {
+		var resp string
+		select {
+		case err := <-chErr:
 			return nil, err
+		case resp = <-chRes:
+
 		}
 
 		arest.Debug("Resp: %s", resp)
@@ -250,14 +285,21 @@ func (c *Client) CallFunction(ctx context.Context, name string, param string) (v
 		url := fmt.Sprintf("/%s?params=%s\n\r", name, param)
 		data := make(map[string]interface{})
 
+		chErr := make(chan error)
+		chRes := make(chan string)
+		go c.read(ctx, chRes, chErr)
+
 		_, err = c.serialPort.Write([]byte(url))
 		if err != nil {
 			return value, err
 		}
 
-		resp, err := c.read(ctx)
-		if err != nil {
+		var resp string
+		select {
+		case err := <-chErr:
 			return value, err
+		case resp = <-chRes:
+
 		}
 
 		arest.Debug("Resp: %s", resp)
@@ -280,37 +322,42 @@ func (c *Client) CallFunction(ctx context.Context, name string, param string) (v
 
 }
 
-func (c *Client) read(ctx context.Context) (string, error) {
+func (c *Client) read(ctx context.Context, chRes chan string, chErr chan error) {
 
 	select {
 	case <-ctx.Done():
-		return "", ctx.Err()
+		chErr <- ctx.Err()
 	default:
+		ch := make(chan bool)
+
 		buffer := make([]byte, 2048)
 		var resp strings.Builder
 
 		ctx, _ = context.WithTimeout(ctx, c.timeout)
-		ch := make(chan bool)
-		chErr := make(chan error)
 
 		go c.watchdog(ctx, ch, chErr)
 
-		for {
+		loop := true
+
+		for loop {
 			select {
-			case err := <-chErr:
-				return "", err
+			case <-chErr:
+				return
 			default:
 				n, err := c.serialPort.Read(buffer)
 				if err != nil {
 					ch <- true
-					return "", err
+					chErr <- err
+					return
 				}
 				if n == 0 {
+					loop = false
 					break
 				}
 				resp.Write(buffer[:n])
 
 				if strings.Contains(string(buffer[:n]), "\n") {
+					loop = false
 					break
 				}
 			}
@@ -318,8 +365,8 @@ func (c *Client) read(ctx context.Context) (string, error) {
 		}
 
 		ch <- true
-
-		return resp.String(), nil
+		chRes <- resp.String()
+		return
 	}
 
 }
