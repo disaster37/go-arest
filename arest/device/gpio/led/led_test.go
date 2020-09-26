@@ -51,6 +51,15 @@ func TestLed(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, false, led.(*LedImp).state)
 
+	// Blink canceleable
+	led.TurnOff(context.Background())
+	chCancel, chErr := led.BlinkCanceleable(context.Background())
+	time.Sleep(2)
+	chCancel <- true
+	err = <-chErr
+	assert.NoError(t, err)
+	assert.Equal(t, false, led.(*LedImp).state)
+
 	// Reset
 	led.TurnOn(context.Background())
 	err = led.Reset(context.Background())

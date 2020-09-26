@@ -12,6 +12,7 @@ type Led interface {
 	TurnOn(ctx context.Context) error
 	TurnOff(ctx context.Context) error
 	Blink(ctx context.Context, duration time.Duration) error
+	BlinkCanceleable(ctx context.Context) (chCancel chan bool, chErr chan error)
 	Toogle(ctx context.Context) error
 	Reset(ctx context.Context) error
 }
@@ -186,4 +187,40 @@ func (h *LedImp) Blink(ctx context.Context, duration time.Duration) error {
 	}
 
 	return nil
+}
+
+func (h *LedImp) BlinkCanceleable(ctx context.Context) (chCancel chan bool, chErr chan error) {
+	expectedState := h.state
+	chCancel = make(chan bool)
+	chErr = make(chan error)
+
+	go func() {
+		for {
+			select {
+			case <-chCancel:
+				if expectedState {
+					err := h.TurnOn(ctx)
+					if err != nil {
+						chErr <- err
+					}
+				} else {
+					err := h.TurnOff(ctx)
+					if err != nil {
+						chErr <- err
+					}
+				}
+
+				chErr <- nil
+				return
+			default:
+				err := h.Toogle(ctx)
+				if err != nil {
+					chErr <- err
+				}
+				time.Sleep(1 * time.Second)
+			}
+		}
+	}()
+
+	return chCancel, chErr
 }
