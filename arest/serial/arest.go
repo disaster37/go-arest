@@ -396,10 +396,12 @@ func (c *Client) watchdog(ctx context.Context, ch chan bool, chErr chan error) {
 
 		serialPort, err := open(c.url)
 		if err != nil {
+			arest.Debug("Error when try to reopen serial: %s", err.Error())
 			chErr <- err
 			c.serialPort = nil
 			return
 		}
+		arest.Debug("Serial port reloaded")
 		c.serialPort = serialPort
 		return
 	case <-ch:
