@@ -391,8 +391,8 @@ func (c *Client) watchdog(ctx context.Context, ch chan bool, chErr chan error) {
 		arest.Debug("Watchdog fired")
 		c.Client().Close()
 
-		c.takeSemaphore()
-		defer c.releazeSemaphore()
+		//go c.takeSemaphore()
+		//defer c.releazeSemaphore()
 
 		serialPort, err := open(c.url)
 		if err != nil {
