@@ -403,6 +403,8 @@ func (c *Client) watchdog(ctx context.Context, ch chan bool, chErr chan error) {
 		}
 		arest.Debug("Serial port reloaded")
 		c.serialPort = serialPort
+
+		chErr <- nil
 		return
 	case <-ch:
 		return
