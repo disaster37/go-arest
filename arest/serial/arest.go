@@ -32,6 +32,10 @@ func NewClient(url string, timeout time.Duration, debug bool) (arest.Arest, erro
 		return nil, err
 	}
 
+	// clean current serial
+	serialPort.ResetInputBuffer()
+	serialPort.ResetOutputBuffer()
+
 	client := &Client{
 		serialPort: serialPort,
 		sem:        make(chan int, 1),
