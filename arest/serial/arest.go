@@ -328,6 +328,8 @@ func (c *Client) CallFunction(ctx context.Context, name string, param string) (v
 
 func (c *Client) read(ctx context.Context, chRes chan string, chErr chan error) {
 
+	ctx, _ = context.WithTimeout(ctx, c.timeout)
+
 	select {
 	case <-ctx.Done():
 		chErr <- ctx.Err()
@@ -336,8 +338,6 @@ func (c *Client) read(ctx context.Context, chRes chan string, chErr chan error) 
 
 		buffer := make([]byte, 2048)
 		var resp strings.Builder
-
-		ctx, _ = context.WithTimeout(ctx, c.timeout)
 
 		go c.watchdog(ctx, ch, chErr)
 
